@@ -23,6 +23,14 @@ para los titulares de este formato, además de todo lo habitual.
 
 Carga `.env`: necesita `PEXELS_API_KEY` y las credenciales de YouTube
 (`YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`, `YT_PRIVACY_STATUS`).
+Opcionalmente `OPENAI_API_KEY` y `CREATE_THUMBNAIL` (bool: `true`/`false`) para
+generar el thumbnail — ver sección 7.5. Si `CREATE_THUMBNAIL` no está definida
+o no vale `true`, la rutina no genera thumbnail y no requiere `OPENAI_API_KEY`.
+
+Opcionalmente `TEMA_FIJO` para forzar el tema del video — ver sección 1. Si vale
+`NONE` o no está definida, la rutina busca el tema automáticamente. Si tiene
+cualquier otro valor (URL, título de noticia o descripción corta), la rutina
+toma ESE tema como el hecho a desarrollar y no busca otro.
 
 Paleta del día como el noticiero: `IDX=$(( 10#$(date +%j) % 5 ))`, misma tabla
 de 5 pares BASE/ACCENT.
@@ -31,16 +39,60 @@ de 5 pares BASE/ACCENT.
 
 ## 1. Selección de la noticia
 
-Busca en la web la noticia de IA **más importante** de las últimas 24-48h. Una
-sola, la de mayor peso: un lanzamiento grande, un acuerdo de miles de millones,
-un avance técnico real, un movimiento regulatorio de fondo. Debe tener
-suficiente sustancia para 5 actos de desarrollo — descarta lo anecdótico.
+**Antes de buscar nada, resuelve la ramificación por `TEMA_FIJO`:**
 
-Criterios: hecho verificable y de fuente primaria; relevancia amplia (no solo
-para investigadores); densidad suficiente para explicar causas e implicaciones.
+```bash
+TEMA_FIJO="${TEMA_FIJO:-NONE}"
+```
 
-Muéstrame la noticia elegida con su fuente antes de escribir. Sigue sin esperar
-confirmación.
+- **Si `TEMA_FIJO == NONE`:** sigue el flujo automático descrito abajo (top 3
+  con foco en LLMs/robótica y selección aleatoria).
+- **Si `TEMA_FIJO` tiene cualquier otro valor** (URL, título de noticia o
+  descripción corta): sáltate la búsqueda y la selección aleatoria. Ese texto
+  es el tema del deep dive. Ve directo a **verificar y ampliar** ese hecho
+  puntual — busca fuentes primarias, cifras, contexto y actores para armar el
+  video sobre exactamente ese tema. **No cambies de tema aunque encuentres
+  algo más "fuerte"** en tu búsqueda; el usuario ya eligió. Si `TEMA_FIJO` es
+  demasiado vago para verificar o no encuentras ninguna fuente primaria que lo
+  respalde, aborta y pídeme una versión más específica (título exacto, URL, o
+  fecha aproximada) en vez de improvisar. Muéstrame los hechos verificados
+  antes de escribir y sigue sin esperar confirmación. Salta directo a la
+  sección 2.
+
+---
+
+**Flujo automático (solo cuando `TEMA_FIJO == NONE`):**
+
+Busca en la web las noticias de IA **más importantes** de las últimas 24-48h.
+**Prioriza dos categorías por encima de las demás:**
+
+1. **Lanzamientos de nuevas versiones de LLMs** — modelos nuevos de OpenAI
+   (GPT), Anthropic (Claude), Google (Gemini), Meta (Llama), xAI (Grok),
+   Mistral, DeepSeek, Qwen, etc. Versiones nuevas o releases mayores; no
+   updates menores ni cambios de precio.
+2. **Lanzamientos en robótica** — robots humanoides, robots industriales,
+   brazos, plataformas físicas, avances relevantes de embodiment o control.
+
+Si en las últimas 24-48h no hay nada suficientemente fuerte en esas dos
+categorías, cae a otros temas: acuerdos grandes, avances técnicos de fondo,
+regulación importante. Pero primero busca en las dos categorías objetivo.
+
+Cada candidata debe tener suficiente sustancia para 5 actos de desarrollo —
+descarta lo anecdótico. Criterios: hecho verificable y de fuente primaria;
+relevancia amplia (no solo para investigadores); densidad suficiente para
+explicar causas e implicaciones.
+
+**Arma un top 3** con las mejores candidatas (ordenadas por peso) y **elige una
+al azar** entre las tres. Es intencional: si la rutina se ejecuta más de una
+vez el mismo día, aumenta la probabilidad de que cada corrida produzca un video
+distinto. Usa un RNG de verdad, no elijas siempre la #1:
+
+```bash
+IDX=$(python3 -c "import random; print(random.randrange(3))")
+```
+
+Muéstrame las 3 candidatas y cuál quedó seleccionada (con su fuente) antes de
+escribir. Sigue sin esperar confirmación.
 
 ---
 
@@ -352,6 +404,135 @@ Concatena con `-f concat -c copy` en `video_mudo.mp4`. Luego la cama musical (pa
 
 ---
 
+## 7.5. Thumbnail (opcional — GPT Image 2)
+
+**Guardia:** este paso solo se ejecuta si `CREATE_THUMBNAIL=true` en el `.env`.
+Si la variable no existe o vale otra cosa, sáltate toda la sección y sigue
+directo a la subida — YouTube usará el thumbnail auto-generado del video.
+
+### 7.5.1. Modelo y costo
+
+- Modelo: **`gpt-image-2`** (OpenAI). Único permitido; no uses `gpt-image-1`
+  (deprecado 23-oct-2026) ni calidad `high`/`hd`, para mantener el costeo controlado.
+- Tamaño: `1024x1536` (portrait, ratio ~9:16 — encaja con el video vertical).
+- Calidad: `medium`.
+- Costo publicado: **~$0.041 USD por imagen**, fijo por tarifa. Sin sorpresas.
+
+### 7.5.2. Prompt base (estilo fijo del canal)
+
+Este bloque es la parte que NO cambia entre videos. Cópialo tal cual como
+`BASE` y luego rellena los slots `{...}` con los datos de la noticia del día
+(ver 7.5.3):
+
+```
+Design a high-CTR vertical 9:16 YouTube Shorts thumbnail for an AI news channel. Photorealistic, cinematic, editorial newsroom style — bold and urgent, high contrast, premium production value.
+
+PALETTE (fixed brand):
+- Deep navy base #0B1B2B with dark blue gradient
+- Bright orange accent #FF8A00 to #FFB020 (used for the hero figure and the final payoff word)
+- Crisp white for the neutral headline lines
+- Cool cyan/blue rim lights in the background scene
+
+HERO (upper-middle, dominant):
+- Massive glowing gradient orange text: "{HERO_FIGURE}"
+- Real photographic bloom, halo bleeding into the background, subtle motion blur, depth-of-field. Treated as a real light-emitting element in the scene.
+
+HEADLINE (center, stacked, uppercase, bold sans-serif, tight tracking, high contrast):
+- Line 1 (white): "{HEADLINE_LINE_1}"
+- Line 2 (white): "{HEADLINE_LINE_2}"
+- Line 3 (bright orange, larger): "{PAYOFF_WORD}"
+
+SUB (thin orange rule + one line in light gray/white):
+- "{SUBTITLE}"
+
+BRAND LOGOS (side-by-side pills placed around 75-78% of the image height — NOT flush to the bottom edge; leave clear breathing room below, no plus sign, no divider):
+- Left pill: {BRAND_1_PILL_DESCRIPTION}
+- Right pill: {BRAND_2_PILL_DESCRIPTION}
+
+BACKGROUND (dramatic, tells the story — this is what earns the click):
+{BACKGROUND_DESCRIPTION}
+Shallow depth of field so the scene stays legible under the text. Dramatic side-lighting, shadow contrast, faint lens flare in one corner. Feels like a movie still, not stock illustration.
+
+COMPOSITION:
+- Portrait 9:16. Text-heavy elements strictly centered on the vertical axis.
+- Text crisp and readable, treated as a design overlay on top of the photograph.
+- Mood: bold, editorial, urgent. Think Bloomberg meets Wired cover.
+
+STRICT NEGATIVES (do not add any of these):
+- No channel logo, monogram, or channel name text
+- No date, footer, hashtags, watermark
+- No plus sign or "+" between the brand pills
+- No extra icons or badges
+- No text other than the elements listed above
+```
+
+### 7.5.3. Cómo rellenar los slots
+
+Derivá los slots de la noticia que elegiste en la sección 1 y desarrollaste en
+la 2-3. Reglas cortas por slot:
+
+- **`HERO_FIGURE`**: la cifra o palabra clave más impactante de la historia
+  (`$12.9B`, `-80%`, `2×`, `GPT-6`). Corta, memorable, digna de portada.
+- **`HEADLINE_LINE_1` + `HEADLINE_LINE_2`**: dos líneas cortas (máx ~12
+  caracteres cada una), mayúsculas, que arman una frase — el gancho editorial
+  (`NVIDIA JUST` / `BOUGHT AI'S`).
+- **`PAYOFF_WORD`**: la palabra final en naranja que cierra el gancho
+  (`GITHUB`, `CHEAPER`, `HUMANOID`). Una sola palabra, alto impacto.
+- **`SUBTITLE`**: una línea explicativa (≤48 caracteres) — la traducción
+  literal de la noticia en tono periodista.
+- **`BRAND_1_PILL_DESCRIPTION` / `BRAND_2_PILL_DESCRIPTION`**: descripción
+  visual de cada uno de los 1-2 logos más reconocibles del hecho (empresa,
+  modelo o producto). Incluye color de la pill, el wordmark real y un mark
+  distintivo. Si la noticia solo involucra una marca, deja
+  `BRAND_2_PILL_DESCRIPTION` vacío y modifica esa línea del prompt para pedir
+  un solo pill centrado.
+- **`BACKGROUND_DESCRIPTION`**: 3-5 líneas describiendo una escena fotorrealista
+  que funcione como metáfora visual del hecho (chip absorbiendo algo, robot
+  humanoide con luz cinemática, data center dramático, etc.). Menciona colores,
+  iluminación y sensación. Es el elemento que más mueve el CTR.
+
+### 7.5.4. Llamada
+
+```python
+import os, base64
+from openai import OpenAI
+
+if os.environ.get("CREATE_THUMBNAIL", "").lower() == "true":
+    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    prompt = BASE.format(
+        HERO_FIGURE="...",
+        HEADLINE_LINE_1="...",
+        HEADLINE_LINE_2="...",
+        PAYOFF_WORD="...",
+        SUBTITLE="...",
+        BRAND_1_PILL_DESCRIPTION="...",
+        BRAND_2_PILL_DESCRIPTION="...",
+        BACKGROUND_DESCRIPTION="...",
+    )
+    try:
+        resp = client.images.generate(
+            model="gpt-image-2",
+            prompt=prompt,
+            size="1024x1536",
+            quality="medium",
+            n=1,
+        )
+        with open("thumbnail.png", "wb") as f:
+            f.write(base64.b64decode(resp.data[0].b64_json))
+        print("THUMBNAIL=generated ($0.041)")
+    except Exception as e:
+        print(f"THUMBNAIL=failed ({e}) — sigue sin thumbnail")
+```
+
+### 7.5.5. Fallback
+
+Si la llamada a OpenAI falla (auth, cuota, red, timeout, contenido rechazado),
+**no bloquees el pipeline**: reporta el error en una línea, continuá sin
+`thumbnail.png`, y YouTube pondrá el auto-generado. Este paso es opcional por
+diseño — nunca abortá el video por esto.
+
+---
+
 ## 8. Subida a YouTube (programada a las 4am NY)
 
 `videos.insert` con las credenciales del `.env`, `categoryId: 28`, subida
@@ -394,6 +575,16 @@ resp = yt.videos().insert(part="snippet,status", body=body,
     media_body=MediaFileUpload(os.environ["NOMBRE"], resumable=True)).execute()
 vid = resp["id"]
 print(f"VIDEO_URL=https://www.youtube.com/watch?v={vid}")
+
+# Thumbnail (opcional): sube thumbnail.png si existe (creado en 7.5).
+# No bloquea si falla — YouTube usa el auto-generado.
+if os.path.exists("thumbnail.png"):
+    try:
+        yt.thumbnails().set(videoId=vid,
+            media_body=MediaFileUpload("thumbnail.png")).execute()
+        print("THUMBNAIL_UPLOAD=ok")
+    except Exception as e:
+        print(f"THUMBNAIL_UPLOAD=failed ({e})")
 print(f"STUDIO_URL=https://studio.youtube.com/video/{vid}/edit")
 print(f"PUBLISH_AT={publish_at}  (4:00am America/New_York)")
 ```
@@ -436,17 +627,26 @@ tag-stuffing; llenar los 500 es usar más tags *relevantes*, no basura.
 3. El `manifiesto.json`.
 4. Resumen: título y descripción publicados, duración total, **los hechos con
    sus fuentes** para verificar el fact-check, y conceptos de fondo descartados.
+5. **Thumbnail**: si `CREATE_THUMBNAIL=true`, indica si se generó y subió (o si
+   falló), y el costo estimado ($0.041). Si estaba en `false` o no definido,
+   di simplemente "no aplica" y el video usa el auto-generado de YouTube.
 
 ---
 
 ## Reglas de fallo
 
 - Si la noticia no tiene sustancia para 5 actos, elige otra más densa.
+- Si `TEMA_FIJO` está definido pero el tema no da para 5 actos o no se puede
+  verificar en ninguna fuente primaria, avisa y no fuerces el video: pídeme
+  una versión más específica del tema en vez de improvisar contenido.
 - Si un hecho no se verifica en fuente primaria, no lo uses.
 - Si el arco introduce causalidad sin respaldo, reescribe el acto.
 - Si un título excede el ancho aun al mínimo, acórtalo.
 - Si la subida falla, reporta el error exacto y deja el mp4. Ante `invalid_grant`,
   el token expiró: avísame.
+- Si la generación o subida del thumbnail falla, sigue con el resto: es
+  opcional y YouTube usa el auto-generado. No es motivo para reportar el video
+  como fallido.
 - Si algo falla irrecuperable, entrega lo que alcanzaste y di en qué acto/paso.
 
 ---
