@@ -469,17 +469,37 @@ STRICT NEGATIVES (do not add any of these):
 ### 7.5.3. Cómo rellenar los slots
 
 Derivá los slots de la noticia que elegiste en la sección 1 y desarrollaste en
-la 2-3. Reglas cortas por slot:
+la 2-3.
 
-- **`HERO_FIGURE`**: la cifra o palabra clave más impactante de la historia
-  (`$12.9B`, `-80%`, `2×`, `GPT-6`). Corta, memorable, digna de portada.
+**Principio rector — el thumbnail es la PORTADA del hecho, no editorial.** Debe
+comunicar en 2 segundos QUÉ pasó (el lanzamiento, el acuerdo, el release), no
+el ángulo analítico del deep dive ni el hook interpretativo del acto 1. El
+video adentro puede cuestionar, matizar o desmontar la noticia; el thumbnail
+NO. Su trabajo es que alguien haciendo scroll entienda al toque el hecho
+concreto y reconozca las marcas involucradas. Nada de metáforas oblicuas,
+sarcasmo, opinión, ni cifras inventadas para el clickbait — si un dato no está
+publicado por una fuente primaria, no va en el thumbnail.
+
+Reglas cortas por slot (todos deben describir el hecho, no el ángulo):
+
+- **`HERO_FIGURE`**: la cifra o palabra clave **oficial** más impactante del
+  anuncio (`$12.9B`, `-80%`, `1M CTX`, `GPT-6`, `72.6%`). Debe ser un dato
+  publicado por una fuente primaria de la noticia. Si no hay una cifra fuerte,
+  usa el nombre del producto/versión (`CLAUDE 5`, `ATLAS V2`). Prohibido
+  inventar métricas para el gancho.
 - **`HEADLINE_LINE_1` + `HEADLINE_LINE_2`**: dos líneas cortas (máx ~12
-  caracteres cada una), mayúsculas, que arman una frase — el gancho editorial
-  (`NVIDIA JUST` / `BOUGHT AI'S`).
-- **`PAYOFF_WORD`**: la palabra final en naranja que cierra el gancho
-  (`GITHUB`, `CHEAPER`, `HUMANOID`). Una sola palabra, alto impacto.
-- **`SUBTITLE`**: una línea explicativa (≤48 caracteres) — la traducción
-  literal de la noticia en tono periodista.
+  caracteres cada una), mayúsculas, que nombran el hecho de manera directa —
+  qué empresa hizo qué. Ejemplos: `NVIDIA BUYS` / `HUGGING FACE`; `OPENAI JUST`
+  / `SHIPPED GPT-6`; `FIGURE 03` / `IS HERE`. No metáforas, no juicios de
+  valor, no preguntas.
+- **`PAYOFF_WORD`**: la palabra final en naranja que remata el titular con el
+  sujeto real del hecho — el producto, la categoría o el nombre. Ejemplos:
+  `ASTRA` (nombre del modelo), `HUMANOID` (categoría), `HUGGINGFACE` (empresa
+  adquirida). Alto impacto pero descriptiva, no ingeniosa.
+- **`SUBTITLE`**: una línea explicativa (≤48 caracteres) que amplía el
+  titular con el dato más concreto del anuncio, en tono de titular de agencia
+  de noticias. Nada de "what nobody's saying" ni "the story behind" — eso es
+  ángulo, no hecho.
 - **`BRAND_1_PILL_DESCRIPTION` / `BRAND_2_PILL_DESCRIPTION`**: descripción
   visual de cada uno de los 1-2 logos más reconocibles del hecho (empresa,
   modelo o producto). Incluye color de la pill, el wordmark real y un mark
