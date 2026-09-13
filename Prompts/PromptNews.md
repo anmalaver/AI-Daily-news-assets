@@ -976,6 +976,87 @@ basta `YYYYMMDD.mp4`.
 
 ---
 
+## 6.5. Subtítulos (captions en/es/fr)
+
+Cada video sube 3 tracks de subtítulos vía API: **inglés** (literal del audio), **español** y **francés** (traducciones). Se activan solo si el viewer prende CC (o si YouTube los ofrece por auto-translate), y aportan SEO real en cada idioma.
+
+### 6.5.1. Requisito de scope
+
+El `YT_REFRESH_TOKEN` debe tener el scope `https://www.googleapis.com/auth/youtube.force-ssl` (además de `youtube.upload`). Sin ese scope, `captions.insert` falla con `insufficientPermissions`. Si no lo tiene, sáltate esta sección y avisá al final que faltó el scope.
+
+### 6.5.2. Generar `subs_en.srt` (inglés literal)
+
+edge-tts ya generó un `sub_N.srt` por escena (intro + noticias 1..5) en la sección 4 (junto con el audio de cada escena). Cada archivo tiene timestamps que arrancan en 00:00:00 — hay que concatenarlos aplicando el **offset acumulado** de la duración medida (`DUR_N` con ffprobe) de las escenas previas, y **añadir 1.2s de offset a las cues de la intro** porque el cabezote de la sección 4 adelanta la voz en la mezcla final.
+
+```python
+from datetime import timedelta
+import re
+
+def _to_td(s):
+    h, m, rest = s.split(":")
+    sec, ms = rest.split(",")
+    return timedelta(hours=int(h), minutes=int(m), seconds=int(sec), milliseconds=int(ms))
+
+def _fmt(td):
+    total_ms = int(td.total_seconds() * 1000)
+    h, r = divmod(total_ms, 3600000)
+    m, r = divmod(r, 60000)
+    s, ms = divmod(r, 1000)
+    return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
+
+def parse_srt(path):
+    cues = []
+    text = open(path, encoding="utf-8").read().strip()
+    for block in re.split(r"\n\s*\n", text):
+        lines = block.strip().splitlines()
+        if len(lines) < 2:
+            continue
+        m = re.match(r"(\d\d:\d\d:\d\d,\d\d\d)\s*-->\s*(\d\d:\d\d:\d\d,\d\d\d)", lines[1])
+        if not m:
+            continue
+        cues.append((_to_td(m.group(1)), _to_td(m.group(2)), "\n".join(lines[2:])))
+    return cues
+
+# Concatenar intro + noticias 1..5 con offsets acumulados.
+# La intro lleva +1.2s porque el cabezote adelanta la voz en la mezcla final (paso 4).
+INTRO_ADELAY = timedelta(milliseconds=1200)
+all_cues = []
+offset = timedelta()
+
+# Intro (con +1.2s por el cabezote)
+for start, end, txt in parse_srt("sub_intro.srt"):
+    all_cues.append((start + INTRO_ADELAY + offset, end + INTRO_ADELAY + offset, txt))
+offset += timedelta(seconds=float(open("dur_intro.txt").read()))
+
+# Noticias 1..5
+for n in [1, 2, 3, 4, 5]:
+    for start, end, txt in parse_srt(f"sub_{n}.srt"):
+        all_cues.append((start + offset, end + offset, txt))
+    offset += timedelta(seconds=float(open(f"dur_{n}.txt").read()))
+
+with open("subs_en.srt", "w", encoding="utf-8") as f:
+    for i, (start, end, txt) in enumerate(all_cues, 1):
+        f.write(f"{i}\n{_fmt(start)} --> {_fmt(end)}\n{txt}\n\n")
+```
+
+### 6.5.3. Generar `subs_es.srt` y `subs_fr.srt` (traducciones)
+
+Traducí `subs_en.srt` a español y francés **cue por cue, preservando timestamps exactos**. La traducción la hacés vos (el agente que corre esta rutina) — sin llamada externa a API, sin costo adicional. Reglas:
+
+- **Traducción periodística natural**, no literal palabra por palabra. Debe sonar como noticia bien escrita en ese idioma, no como doblaje robótico.
+- **Preservá marcas, productos, nombres propios y siglas** sin traducir (`Nvidia`, `GPT-6 Astra`, `Hugging Face`, `AWS`, etc.).
+- **Números y cifras idénticos** (usá formato local si aplica: `1.5B` en inglés, `1,5 B` en español y francés).
+- **Timestamps EXACTOS** de `subs_en.srt` — nunca los modifiques. El audio y el video son los mismos; la sincronización debe coincidir.
+- **Reading speed en español/francés:** si un cue queda con texto notablemente más largo que en inglés y podría ser difícil de leer, acortá levemente sin cambiar el sentido. Nunca partas un cue en dos.
+
+Salidas: `subs_es.srt` y `subs_fr.srt` con la misma estructura y timestamps que `subs_en.srt`.
+
+### 6.5.4. Subida via API
+
+Se hace en el paso siguiente junto con la subida del video — ver el bloque de `captions().insert` en la sección de subida.
+
+---
+
 ## 7. Subida a YouTube
 
 Sube el `YYYYMMDD.mp4` al canal con la YouTube Data API v3, usando las
@@ -1040,6 +1121,30 @@ req = yt.videos().insert(
 resp = req.execute()
 vid = resp["id"]
 print(f"VIDEO_URL=https://www.youtube.com/watch?v={vid}")
+
+# Captions (en/es/fr): sube cada track si el archivo existe.
+# Requiere scope youtube.force-ssl en el refresh token; si falta, falla con
+# insufficientPermissions. No bloquea el pipeline.
+for lang_code, lang_name, srt_path in [
+    ("en", "English",  "subs_en.srt"),
+    ("es", "Spanish",  "subs_es.srt"),
+    ("fr", "French",   "subs_fr.srt"),
+]:
+    if not os.path.exists(srt_path):
+        print(f"CAPTION_{lang_code}=skipped (no file)")
+        continue
+    try:
+        yt.captions().insert(
+            part="snippet",
+            body={"snippet": {
+                "videoId": vid, "language": lang_code,
+                "name": lang_name, "isDraft": False,
+            }},
+            media_body=MediaFileUpload(srt_path, mimetype="text/srt"),
+        ).execute()
+        print(f"CAPTION_{lang_code}=uploaded")
+    except Exception as e:
+        print(f"CAPTION_{lang_code}=failed ({e})")
 print(f"STUDIO_URL=https://studio.youtube.com/video/{vid}/edit")
 print(f"PUBLISH_AT={publish_at}  (4:00am America/New_York)")
 ```
@@ -1079,6 +1184,8 @@ Cuando el video esté subido, preséntame:
 5. Un resumen corto: título y descripción que quedaron publicados, duración
    total del video, y qué conceptos de fondo se descartaron si hubo. No listes
    la foto de cada escena.
+6. **Captions**: para cada idioma (en/es/fr), si el track se subió o falló.
+   Si falló todo por scope, di que el refresh token no tiene `youtube.force-ssl`.
 
 El video queda **programado como privado** y YouTube lo hace público solo a las
 4:00am NY. Al revisarlo por la URL antes de esa hora, lo verás como privado —es
@@ -1092,6 +1199,7 @@ lo esperado. Si algo está mal, tienes hasta las 4am para cambiarlo en Studio.
 - Si el audio de una escena pasa de 13s, acorta el guion y regenera esa escena.
 - Si un título o cuerpo excede los límites de caracteres, reescríbelo. No lo
   renderices confiando en que "quizá quepa".
+- Si `captions().insert` falla, sigue con el resto: los captions son opcionales y YouTube tiene auto-generados de respaldo. No es motivo para reportar el video como fallido. Anotá qué idiomas fallaron para el reporte final. El error típico `insufficientPermissions` indica que falta el scope `youtube.force-ssl` en el refresh token.
 - Si algo falla de forma irrecuperable, entrégame lo que alcanzaste y dime
   exactamente en qué paso se rompió. No inventes contenido para completar.
 
