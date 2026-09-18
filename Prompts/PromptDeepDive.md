@@ -32,6 +32,11 @@ Opcionalmente `TEMA_FIJO` para forzar el tema del video — ver sección 1. Si v
 cualquier otro valor (URL, título de noticia o descripción corta), la rutina
 toma ESE tema como el hecho a desarrollar y no busca otro.
 
+Opcionalmente `GITHUB_TOKEN` para actualizar el historial de temas en el repo
+`anmalaver/AI-Daily-news-assets` — ver sección 1. Necesita permiso `contents:write`
+sobre ese repo. Si no está, la rutina LEE el historial para no repetir pero no
+puede escribir; te avisa al final que la actualización quedó pendiente.
+
 Paleta del día como el noticiero: `IDX=$(( 10#$(date +%j) % 5 ))`, misma tabla
 de 5 pares BASE/ACCENT.
 
@@ -63,7 +68,36 @@ TEMA_FIJO="${TEMA_FIJO:-NONE}"
 
 **Flujo automático (solo cuando `TEMA_FIJO == NONE`):**
 
-Busca en la web las noticias de IA **más importantes** de las últimas 24-48h.
+**Antes de buscar, descargá el historial de los últimos 20 temas** desde:
+```
+https://raw.githubusercontent.com/anmalaver/AI-Daily-news-assets/main/topics-history/deepdive-history.json
+```
+Es un fetch público, sin auth para leer. Si el archivo no existe o el fetch falla,
+asumí historial vacío `{"topics": []}` y seguí.
+
+El JSON tiene forma:
+
+```json
+{
+  "topics": [
+    {
+      "fecha": "2026-09-18",
+      "slug": "openai-gpt-6-astra",
+      "titulo": "OpenAI ships GPT-6 Astra",
+      "url": "https://openai.com/index/gpt-6-astra",
+      "marca_principal": "OpenAI",
+      "producto": "GPT-6 Astra"
+    }
+  ]
+}
+```
+
+**El `slug` es la clave para deduplicar.** Se arma minúsculas, sin acentos,
+palabras separadas por guiones: `marca-principal-producto` (ej. `nvidia-hugging-face-acquisition`,
+`figure-03-humanoid`). Cuando armes candidatas nuevas más abajo, generá su slug con la
+misma regla y compará contra el historial.
+
+Ahora sí: buscá en la web las noticias de IA **más importantes** de las últimas 24-48h.
 **Prioriza dos categorías por encima de las demás:**
 
 1. **Lanzamientos de nuevas versiones de LLMs** — modelos nuevos de OpenAI
@@ -82,7 +116,13 @@ descarta lo anecdótico. Criterios: hecho verificable y de fuente primaria;
 relevancia amplia (no solo para investigadores); densidad suficiente para
 explicar causas e implicaciones.
 
-**Arma un top 3** con las mejores candidatas (ordenadas por peso) y **elige una
+**Filtrá candidatas contra el historial:** descartá cualquier candidata cuyo `slug`
+coincida con alguno de los últimos 20 del `deepdive-history.json`. Si tras filtrar
+quedan menos de 3 candidatas viables, ampliá primero la ventana temporal a 72h y buscá
+más candidatas. Solo si aun así no llegás a 3, cortá el historial a los últimos 10 y
+usá esas candidatas — nunca fuerces algo que salió ayer si hay alternativa fresca.
+
+**Arma un top 3** con las mejores candidatas restantes (ordenadas por peso) y **elige una
 al azar** entre las tres. Es intencional: si la rutina se ejecuta más de una
 vez el mismo día, aumenta la probabilidad de que cada corrida produzca un video
 distinto. Usa un RNG de verdad, no elijas siempre la #1:
@@ -93,6 +133,82 @@ IDX=$(python3 -c "import random; print(random.randrange(3))")
 
 Muéstrame las 3 candidatas y cuál quedó seleccionada (con su fuente) antes de
 escribir. Sigue sin esperar confirmación.
+
+---
+
+## 1.5. Actualización del historial (tras la subida)
+
+**Esto se ejecuta DESPUÉS de que el video quede subido con éxito** (fin de sección 8),
+no ahora — pero se define acá para tenerlo junto a la lógica de selección.
+
+Con la noticia elegida (venga de TEMA_FIJO o del flujo automático), arma la nueva entrada:
+
+```python
+import unicodedata, re
+def slugify(s):
+    s = unicodedata.normalize('NFKD', s).encode('ascii', 'ignore').decode()
+    s = re.sub(r'[^a-zA-Z0-9]+', '-', s).strip('-').lower()
+    return s[:80]
+
+entrada = {
+    'fecha': datetime.now(ZoneInfo('America/New_York')).strftime('%Y-%m-%d'),
+    'slug': slugify(f"{marca_principal} {producto}"),
+    'titulo': titulo_corto_del_hecho,       # ej. 'OpenAI ships GPT-6 Astra'
+    'url': url_fuente_primaria,
+    'marca_principal': marca_principal,     # ej. 'OpenAI'
+    'producto': producto,                   # ej. 'GPT-6 Astra' (o el hecho, ej. 'Hugging Face acquisition')
+}
+```
+
+**Si `GITHUB_TOKEN` no está en el entorno**, saltate el push, y avisá en la entrega
+que la actualización del historial quedó pendiente (pasando la entrada para pegarla a mano).
+
+**Si `GITHUB_TOKEN` está**, actualizá el archivo via GitHub Contents API:
+
+```python
+import base64, json, urllib.request
+
+REPO = 'anmalaver/AI-Daily-news-assets'
+PATH = 'topics-history/deepdive-history.json'
+API  = f'https://api.github.com/repos/{REPO}/contents/{PATH}'
+HDR  = {'Authorization': f'Bearer {os.environ["GITHUB_TOKEN"]}',
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'ai-daily-pipeline'}
+
+# 1) Leer estado actual (para obtener el `sha` requerido para el update)
+req = urllib.request.Request(API, headers=HDR)
+with urllib.request.urlopen(req) as r:
+    data = json.load(r)
+sha = data['sha']
+current = json.loads(base64.b64decode(data['content']).decode('utf-8'))
+
+# 2) Insertar la nueva entrada al inicio y truncar a 20
+current['topics'] = [entrada] + [t for t in current['topics'] if t['slug'] != entrada['slug']]
+current['topics'] = current['topics'][:20]
+
+# 3) PUT del archivo actualizado
+body = json.dumps({
+    'message': f'Add {entrada["slug"]} to deepdive history',
+    'content': base64.b64encode(json.dumps(current, indent=2, ensure_ascii=False).encode('utf-8')).decode(),
+    'sha': sha,
+    'branch': 'main',
+}).encode()
+req = urllib.request.Request(API, data=body, method='PUT', headers=HDR)
+try:
+    with urllib.request.urlopen(req) as r:
+        print('HISTORIAL=updated')
+except Exception as e:
+    print(f'HISTORIAL=failed ({e}) — entrada: {entrada}')
+```
+
+**Reglas:**
+- Si el push falla (auth, red, conflicto), NO bloquees el pipeline: el video ya está
+  subido. Reportá el fallo con la entrada armada para que Nico la pegue a mano.
+- El filtrado por `slug` en la inserción evita duplicados si por alguna razón un tema
+  se procesó dos veces.
+- El truncado a 20 se hace después de insertar la nueva.
+- Aunque uses `TEMA_FIJO`, se registra el tema también. Así el flujo automático de
+  mañana sabe que ya lo cubriste.
 
 ---
 
@@ -749,6 +865,9 @@ tag-stuffing; llenar los 500 es usar más tags *relevantes*, no basura.
    di simplemente "no aplica" y el video usa el auto-generado de YouTube.
 6. **Captions**: para cada idioma (en/es/fr), si el track se subió o falló.
    Si falló todo por scope, di que el refresh token no tiene `youtube.force-ssl`.
+7. **Historial de temas**: si se actualizó `deepdive-history.json` en el repo
+   o si quedó pendiente (falta `GITHUB_TOKEN` o push falló). Si quedó pendiente,
+   pega la entrada JSON para copiar-pegar a mano.
 
 ---
 
@@ -767,6 +886,8 @@ tag-stuffing; llenar los 500 es usar más tags *relevantes*, no basura.
   opcional y YouTube usa el auto-generado. No es motivo para reportar el video
   como fallido.
 - Si `captions().insert` falla, sigue con el resto: los captions son opcionales y YouTube tiene auto-generados de respaldo. No es motivo para reportar el video como fallido. Anotá qué idiomas fallaron para el reporte final. El error típico `insufficientPermissions` indica que falta el scope `youtube.force-ssl` en el refresh token.
+- Si el fetch inicial del historial falla, asumí `{"topics": []}` y seguí — no vas a duplicar por accidente porque ya viene con TEMA_FIJO opcional y siempre muestro las candidatas antes de escribir. Reportá el fallo en la entrega.
+- Si el push al historial falla, el video ya está publicado — no lo bajes. Pega la entrada JSON en la entrega para actualización manual.
 - Si algo falla irrecuperable, entrega lo que alcanzaste y di en qué acto/paso.
 
 ---
