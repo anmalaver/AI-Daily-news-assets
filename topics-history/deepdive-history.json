@@ -1,1 +1,12 @@
-{"topics": []}
+{
+  "topics": [
+    {
+      "fecha": "2026-09-18",
+      "slug": "openai-claude-opus-5-monorepo-breach",
+      "titulo": "White hats used Claude Opus 5 to breach OpenAI's monorepo",
+      "url": "https://www.hacktron.ai/blog/hacking-openai",
+      "marca_principal": "OpenAI",
+      "producto": "Claude Opus 5 monorepo breach"
+    }
+  ]
+}
