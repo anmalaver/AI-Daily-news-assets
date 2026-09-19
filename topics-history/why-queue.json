@@ -1,0 +1,91 @@
+{
+  "channel": "why-shorts-en",
+  "updated": "2026-09-19",
+  "ideas": [
+    {
+      "id": "why-0003",
+      "slug": "do-opposites-attract",
+      "question_en": "Do opposites really attract?",
+      "myth": "Opposites attract. Birds of a feather flock together.",
+      "myth_attribution": "Folk wisdom. Both versions, somehow.",
+      "verdict": "You married your mirror.",
+      "takeaway": "Which trait would you check first?",
+      "sources": [
+        {
+          "cite": "Horwitz, T. B., et al. (2023). Evidence of correlations between human partners based on systematic reviews and meta-analyses of 22 traits and UK Biobank analysis of 133 traits. Nature Human Behaviour, 7, 1568-1583.",
+          "n": 79074,
+          "doi": "10.1038/s41562-023-01672-z",
+          "year": 2023
+        }
+      ],
+      "chart_spec": {
+        "type": "bar",
+        "caption": "partner correlation across 133 traits",
+        "series": [
+          {
+            "name": "correlation",
+            "values": [0.79, 0.75, 0.66, 0.55, 0.42, 0.3, 0.18, 0.08, 0.03],
+            "color": "amber",
+            "highlight_index": 0
+          }
+        ],
+        "note": "none negative"
+      },
+      "stimulus_queries": [
+        "couple silhouette sunset",
+        "two people walking hill dusk",
+        "couple lake twilight",
+        "silhouette couple ocean",
+        "back view people dusk"
+      ],
+      "scores": { "demand": 4, "evidence": 5, "counterintuition": 5, "chartability": 5 },
+      "replication_check": "2023 study, post-crisis, n=79k UK Biobank — passes",
+      "status": "ready",
+      "publish_date": "2026-09-20"
+    },
+    {
+      "id": "why-0007",
+      "slug": "time-speeds-up-with-age",
+      "question_en": "Why does time speed up as you age?",
+      "myth": "A year is 20% of your life at five. Only 2% at fifty.",
+      "myth_attribution": "Janet, 1897. Repeated ever since.",
+      "verdict": "It's not your age. It's your calendar.",
+      "takeaway": "What would you take off this week?",
+      "sources": [
+        {
+          "cite": "Friedman, W. J., & Janssen, S. M. J. (2010). Aging and the speed of time. Acta Psychologica, 134(2), 130-141.",
+          "n": 1865,
+          "doi": "10.1016/j.actpsy.2010.01.004",
+          "year": 2010
+        },
+        {
+          "cite": "Janssen, S. M. J., Naka, M., & Friedman, W. J. (2013). Why does life appear to speed up as people get older? Time & Society, 22(2), 274-290.",
+          "n": 868,
+          "doi": "10.1177/0961463X13478052",
+          "year": 2013
+        }
+      ],
+      "chart_spec": {
+        "type": "line",
+        "caption": "perceived speed of time \u00b7 n = 1,865",
+        "x_label": "age 20 \u2192 80",
+        "series": [
+          { "name": "last 10 years", "values": [44, 55, 66, 78, 86, 88, 88], "color": "punch" },
+          { "name": "week / month / year", "values": [72, 71, 73, 72, 71, 72, 73], "color": "mute" }
+        ],
+        "note": "only the decade moves"
+      },
+      "stimulus_queries": [
+        "vintage alarm clocks market",
+        "antique cuckoo clocks wall",
+        "crowd silhouette street sunset",
+        "watchmaker repairing clocks",
+        "traffic light trails night"
+      ],
+      "scores": { "demand": 5, "evidence": 4, "counterintuition": 5, "chartability": 4 },
+      "replication_check": "2010 + 2013 large-n survey studies, cross-cultural replication (NL, NZ, JP) — passes",
+      "status": "ready",
+      "publish_date": "2026-09-21"
+    }
+  ]
+}
