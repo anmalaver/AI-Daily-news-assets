@@ -1,0 +1,1071 @@
+# Rutina — Canal "Why" (una pregunta, 6 actos, shorts diarios)
+
+Produce **un short vertical en inglés** (~50-60 segundos) que responde **una
+pregunta popular de psicología o sociología** con fuentes académicas reales y un
+gráfico de datos, en 6 actos. Al terminar, **súbelo a YouTube** y repórtame la URL.
+
+Formato hermano del deep dive, pero de nicho evergreen: no depende de noticias,
+el archivo acumula views por años, y el gancho no es novedad sino
+**contraintuición** — la respuesta popular es casi siempre la equivocada.
+
+---
+
+## 0. Cómo usar este documento
+
+Este prompt está escrito como **harness de ejecución**: casi todas las decisiones
+visuales, tipográficas y de estructura ya están tomadas y fijadas aquí. Tu trabajo
+no es diseñar — es **investigar, escribir y ensamblar** siguiendo las constantes.
+
+Tres reglas que gobiernan todo lo demás:
+
+1. **No inventes parámetros visuales.** Colores, fuentes, coordenadas, duraciones
+   y proporciones están fijados en la sección 6. Si algo no está especificado,
+   es porque no debe variar entre videos.
+2. **Consolida tool calls.** Cada fase tiene un script único (`fase_N.py` o
+   `fase_N.sh`). Escribe el script completo, córrelo una vez, lee la salida.
+   No hagas 15 llamadas a bash para lo que cabe en una. El objetivo explícito
+   de este harness es minimizar tokens.
+3. **Los gates son no-negociables.** Las secciones marcadas `GATE` abortan la
+   corrida si fallan. No los interpretes con flexibilidad, no los saltes "porque
+   casi pasa". Es preferible no publicar hoy que publicar algo sin respaldo.
+
+---
+
+## 1. Setup
+
+Corre `setup.sh`. Además de lo habitual, este formato necesita:
+
+**Fuentes (instancias estáticas — NO la variable).** `rsvg-convert` y PIL no
+resuelven ejes variables de forma confiable: si pasas la variable, todo sale en
+peso regular y se pierde el contraste del sistema. Descarga de Google Fonts:
+
+```
+fonts/Fraunces_9pt-Bold.ttf
+fonts/Fraunces_9pt-MediumItalic.ttf
+fonts/IBMPlexMono-SemiBold.ttf
+fonts/IBMPlexMono-Regular.ttf
+```
+
+**Python:** `pillow`, `matplotlib` (`pip install --break-system-packages`).
+
+**`.env`:** `PEXELS_API_KEY`, credenciales de YouTube (`YT_CLIENT_ID`,
+`YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`), `GITHUB_TOKEN` (historial).
+Opcionales: `TEMA_FIJO`, `CREATE_THUMBNAIL`.
+
+**Sin paleta rotativa.** A diferencia del noticiero y el deep dive, este canal
+tiene **una sola paleta fija** (sección 6). La identidad se construye por
+repetición, no por variación.
+
+La cama musical sí rota (sección 7), reusando las `bed_0..4_norm.mp3` que ya
+existen. Es la única variación permitida entre videos.
+
+---
+
+## 2. Selección de la pregunta
+
+### 2.1. Ramificación por `TEMA_FIJO`
+
+```bash
+TEMA_FIJO="${TEMA_FIJO:-NONE}"
+```
+
+- **`NONE`** → flujo de cola (2.2).
+- **Cualquier otro valor** → esa es la pregunta. Salta a verificación (sección 3).
+  No cambies de tema aunque encuentres algo "mejor".
+
+### 2.2. Flujo de cola
+
+La cola vive en el repo `anmalaver/AI-Daily-news-assets`, en
+`topics-history/why-queue.json`. **Es la fuente de verdad de qué se publica cada
+día** — la rutina no inventa preguntas mientras haya ideas `ready` en la cola.
+
+Descárgala con **dos métodos en orden**, porque `raw.githubusercontent.com` ha
+devuelto 404 para este repo:
+
+```bash
+# 1) intento directo
+curl -fsSL -o why-queue.json \
+  "https://raw.githubusercontent.com/anmalaver/AI-Daily-news-assets/main/topics-history/why-queue.json" \
+|| {
+  # 2) fallback por tarball (el método confiable para este repo)
+  curl -fsSL "https://codeload.github.com/anmalaver/AI-Daily-news-assets/tar.gz/refs/heads/main" \
+    | tar -xz --wildcards --strip-components=1 -O \
+      "*/topics-history/why-queue.json" > why-queue.json
+}
+```
+
+Si ambos fallan o el archivo no existe, asume `{"ideas": []}` y salta a 2.3.
+
+### 2.2.1. Verificación cruzada contra el historial (obligatoria)
+
+**No confíes solo en el campo `status`.** El `status` pasa a `published` únicamente
+si el push al repo funciona al final de la corrida, y ese push puede fallar por
+red, token o permisos — casos en los que el prompt te indica publicar igual y
+reportar. La consecuencia: una idea ya publicada sigue diciendo `ready` y mañana
+se produce otra vez, entera.
+
+Por eso, antes de aceptar una idea de la cola, descarga también el historial y
+compara por `slug`:
+
+```bash
+curl -fsSL -o why-history.json \
+  "https://raw.githubusercontent.com/anmalaver/AI-Daily-news-assets/main/topics-history/why-history.json" \
+|| {
+  curl -fsSL "https://codeload.github.com/anmalaver/AI-Daily-news-assets/tar.gz/refs/heads/main" \
+    | tar -xz --wildcards --strip-components=1 -O \
+      "*/topics-history/why-history.json" > why-history.json
+} || echo '{"topics": []}' > why-history.json
+```
+
+```python
+"""Pick the next queue idea, skipping anything already published."""
+import json
+
+queue = json.load(open("why-queue.json")).get("ideas", [])
+history = json.load(open("why-history.json")).get("topics", [])
+published = {t["slug"] for t in history}
+
+candidata = None
+saltadas = []
+for idea in queue:
+    if idea.get("status") != "ready":
+        continue
+    if idea["publish_date"] > HOY:          # HOY = 'YYYY-MM-DD' en America/New_York
+        continue
+    if idea["slug"] in published:
+        saltadas.append(idea["slug"])       # ready en cola pero ya en historial
+        continue
+    candidata = idea
+    break
+
+if saltadas:
+    print(f"QUEUE_DESYNC={saltadas}  — status quedó 'ready' tras un push fallido")
+```
+
+**Reporta siempre `QUEUE_DESYNC` en la entrega.** Cada slug en esa lista es una
+idea cuyo `status` no se actualizó: el video ya existe pero la cola no lo sabe.
+Son las que hay que corregir a mano en el repo.
+
+**Regla de precedencia:** el historial manda sobre la cola. Si un slug aparece en
+ambos, se salta — es preferible saltar un día que publicar un duplicado, porque
+el duplicado dispara la política de contenido inauténtico de YouTube y el daño
+es a nivel de canal, no de video.
+
+Si tras el filtro no queda ninguna candidata, salta a 2.3.
+
+---
+
+Estructura de cada idea (ya pre-investigada, con fuente y chart definidos):
+
+```json
+{
+  "id": "why-0007",
+  "slug": "time-speeds-up-with-age",
+  "question_en": "Why does time speed up as you age?",
+  "myth": "A year is 20% of your life at five. Only 2% at fifty.",
+  "myth_attribution": "Janet, 1897. Repeated ever since.",
+  "verdict": "It's not your age. It's your calendar.",
+  "takeaway": "What would you take off this week?",
+  "sources": [
+    {"cite": "Friedman & Janssen, Acta Psychologica, 2010", "n": 1865,
+     "doi": "10.1016/j.actpsy.2010.01.004", "year": 2010}
+  ],
+  "chart_spec": {
+    "type": "line",
+    "x_label": "age 20 → 80",
+    "series": [
+      {"name": "last 10 years", "values": [44,55,66,78,86,88,88], "color": "punch"},
+      {"name": "week / month / year", "values": [72,71,73,72,71,72,73], "color": "mute"}
+    ],
+    "caption": "perceived speed of time · n = 1,865"
+  },
+  "stimulus_queries": ["vintage alarm clocks", "antique wall clocks",
+                       "crowd silhouette sunset", "watchmaker repairing",
+                       "traffic light trails night"],
+  "status": "ready",
+  "publish_date": "2026-10-07"
+}
+```
+
+### 2.3. Minería en vivo (fallback)
+
+Solo si la cola está vacía. Busca candidatas en:
+
+- Google autocomplete / People Also Ask con semillas `why do people…`,
+  `why do we…`, `why does everyone…`
+- r/AskSocialScience, r/askpsychology, r/explainlikeimfive — ordenar por top/all-time
+- YouTube autocomplete con las mismas semillas
+
+**Descarta contra el historial** (`why-history.json`, mismos 20 últimos slugs).
+
+Arma 3 candidatas, elige una al azar con RNG real:
+
+```bash
+IDX=$(python3 -c "import random; print(random.randrange(3))")
+```
+
+Muéstrame las 3 y cuál quedó. Sigue sin esperar confirmación.
+
+---
+
+## 3. GATE de evidencia (ANTES de escribir)
+
+Este es el gate que define si el canal tiene credibilidad o es pop-psychology
+más. **Aplica los cuatro cortes en orden. Si falla cualquiera, descarta la
+pregunta y toma la siguiente de la cola.**
+
+### 3.1. Corte de fuente
+
+La respuesta debe apoyarse en **al menos un meta-análisis, revisión sistemática
+o estudio con n ≥ 500**, publicado en revista revisada por pares. Guarda cita
+completa y DOI.
+
+No sirven: artículos de divulgación, libros de autoayuda, TED talks, blogs,
+notas de prensa universitarias sin el paper detrás.
+
+### 3.2. Corte de replicación
+
+**Cualquier hallazgo de psicología social anterior a 2015 debe verificarse
+contra la crisis de replicación antes de usarse.** Busca explícitamente
+`"<hallazgo>" replication failed` o `"<hallazgo>" meta-analysis`.
+
+Prohibidos salvo que el video sea precisamente sobre su caída: social priming,
+power posing, ego depletion, facial feedback, el efecto Macbeth, la mayoría de
+los efectos de "priming" conductual.
+
+Si el hallazgo central del video está en esa familia y no encuentras una
+replicación preregistrada posterior a 2015 que lo sostenga, **descarta la
+pregunta**.
+
+### 3.3. Corte de graficabilidad
+
+Debe existir un dato que se pueda convertir en **una línea, barra o distribución
+que se lea en 4 segundos en pantalla vertical**. Si el hallazgo solo se puede
+expresar en prosa, no es video de este canal.
+
+Máximo 2 series, máximo 9 puntos por serie. Si necesitas más, el dato es
+demasiado complejo para el formato.
+
+### 3.4. Corte de contraintuición
+
+La respuesta correcta debe contradecir la respuesta que el espectador daría.
+Prueba binaria: **¿el acto 05 sorprende a alguien que ya leyó el acto 02?**
+
+Si la respuesta es "sí, básicamente confirma lo que uno pensaba", descarta.
+Sin giro no hay short.
+
+### 3.5. Corte de temperatura política
+
+Descarta preguntas donde la respuesta honesta requiera tomar partido en un
+debate político activo (voto, inmigración, aborto, armas, identidad de género,
+conflictos geopolíticos). El canal explica comportamiento humano; no hace
+comentario político.
+
+**Reporta al final los cuatro cortes con su veredicto**, para auditoría.
+
+---
+
+## 4. Guion — 6 actos
+
+Escribe la historia completa primero, luego trocéala. El arco es fijo:
+
+| Acto | Función | Etiqueta | Narración |
+|---|---|---|---|
+| 1 | **La pregunta** — literal, sin adornos | `the question` | 8-12 palabras |
+| 2 | **El mito** — la respuesta que todos dan, con su origen | `the myth` | 18-24 palabras |
+| 3 | **El dato** — el estudio y su gráfico | `the data` | 22-30 palabras |
+| 4 | **El matiz** — qué predice de verdad el fenómeno | `the nuance` | 18-26 palabras |
+| 5 | **El veredicto** — la frase que reencuadra todo | `the verdict` | 10-16 palabras |
+| 6 | **El cierre** — una pregunta que devuelve al espectador a su vida | `takeaway` | 8-14 palabras |
+
+**Total narración: 90-115 palabras (≈50-60s a rate +8%).**
+
+### 4.1. Reglas de escritura por acto
+
+**Acto 1 — la pregunta.** Escríbela exactamente como la buscaría alguien en
+Google. Sin reformular, sin hacerla "más interesante". Máximo 3 líneas de 16
+caracteres. La pregunta literal es el título del video y la query que lo va a
+encontrar durante años.
+
+**Acto 2 — el mito.** Dos elementos obligatorios: la creencia popular en voz
+de la gente, y **su atribución** (de dónde salió, quién la dijo, cuándo). La
+atribución es lo que convierte una opinión en un objeto examinable. Máximo 3
+líneas de 28 caracteres.
+
+**Acto 3 — el dato.** El estudio, la n, y el hallazgo. Una frase corta debajo
+del gráfico que diga qué estamos viendo. No expliques la metodología; di qué
+mostró. La cita académica va en texto pequeño al pie del frame.
+
+**Acto 4 — el matiz.** Aquí va la variable que sí predice el fenómeno. Es el
+acto que evita que el video sea "los expertos dicen que no, punto". Responde:
+si no es lo que creíamos, ¿entonces qué?
+
+**Acto 5 — el veredicto.** Una sola afirmación, máximo 3 líneas de 16
+caracteres. Debe ser **memorizable y citable**. Reglas duras:
+- Afirmación, nunca pregunta.
+- Anclada en el dato del acto 3, no en especulación nueva.
+- Sin "quizás", "podría ser", "los expertos sugieren".
+- Sin moraleja. "You married your mirror." sí. "Love is complex." no.
+
+**Acto 6 — el cierre.** Una pregunta corta que el espectador pueda contestarse
+a sí mismo hoy. Es lo que genera comentarios sin pedirlos. Prohibido: "comment
+below", "subscribe for more", "what do you think?".
+
+### 4.2. Manifiesto
+
+```json
+{
+  "fecha": "<FECHA>",
+  "id": "why-0007",
+  "voz": "en-US-AvaMultilingualNeural",
+  "titulo_video": "...",
+  "descripcion": "...",
+  "tags": ["..."],
+  "actos": [
+    {
+      "n": 1,
+      "etiqueta": "the question",
+      "layout": "photo_full",
+      "texto": ["Why does time", "speed up as", "you age?"],
+      "estilo": "q",
+      "guion": "Why does time speed up as you get older?",
+      "stimulus": "vintage alarm clocks"
+    }
+  ],
+  "chart_spec": { "...": "..." },
+  "sources": [ { "...": "..." } ]
+}
+```
+
+### 4.3. Tono
+
+Ensayo editorial, no divulgación entusiasta. El narrador sabe algo que el
+espectador no y lo dice sin celebrarlo. Cercano a un artículo de The Atlantic
+leído en voz alta; lejos de "¡dato curioso!".
+
+Prohibido: signos de admiración, "increíble", "te va a volar la cabeza",
+"la ciencia dice", "los científicos descubrieron que" (di qué estudio).
+
+---
+
+## 5. Imágenes (Pexels)
+
+Una foto por acto, **excepto el acto 3**, que no lleva foto — el gráfico es la
+imagen. Son 5 descargas.
+
+Usa las `stimulus_queries` de la cola. Si la cola no trae, derívalas del
+contenido de cada acto.
+
+```python
+import os, urllib.request, json
+HDR = {"Authorization": os.environ["PEXELS_API_KEY"],
+       "User-Agent": "why-pipeline/1.0"}
+
+def fetch(query, out):
+    url = ("https://api.pexels.com/v1/search?"
+           f"query={urllib.parse.quote(query)}&orientation=portrait"
+           "&per_page=15&size=large")
+    req = urllib.request.Request(url, headers=HDR)
+    data = json.load(urllib.request.urlopen(req))
+    for p in data["photos"]:
+        if p["width"] >= 1080 and p["height"] >= 1350:
+            src = p["src"]["large2x"]
+            urllib.request.urlretrieve(src, out)
+            return p["photographer"]
+    return None
+```
+
+**Criterios de descarte** (aplica sin preguntar):
+- Fotos con texto legible, logos o marcas visibles.
+- Fotos claramente generadas por IA (manos raras, texturas plásticas, simetría
+  imposible). Pexels las marca a veces; si dudas, descarta.
+- Retratos frontales de una sola persona mirando a cámara — leen como stock.
+  Prefiere manos, siluetas, escenas, objetos, multitudes de espaldas.
+- La misma foto en dos actos del mismo video.
+
+Guarda `photographer` de cada una para los créditos.
+
+---
+
+## 6. CONSTANTES VISUALES (no modificar)
+
+Todo lo de esta sección es fijo entre videos. No lo re-decidas, no lo "mejores",
+no lo adaptes al tema. La identidad del canal vive aquí.
+
+### 6.1. Paleta
+
+```python
+PAPER       = "#FBFAF5"   # fondo único
+INK         = "#0F0F0E"   # texto principal, banda inferior
+MUTED       = "#6E6E68"   # labels, metadata, citas
+PUNCH       = "#EF3E36"   # pregunta, comillas, dato alto — SOLO formas y display grande
+PUNCH_DEEP  = "#C42820"   # punch cuando es texto ≤20px
+AMBER       = "#F5B800"   # SOLO fills: barras, bloques, subrayados
+AMBER_DEEP  = "#B07C00"   # ámbar cuando es texto
+VERDICT     = "#00A67E"   # veredicto, display grande
+VERDICT_DEEP= "#00805F"   # verde cuando es texto pequeño
+```
+
+**Regla única que gobierna la paleta: los colores saturados pintan formas, sus
+versiones `_DEEP` pintan letras.** Nunca `AMBER` como color de texto. Nunca
+`PUNCH` en texto menor a 20px.
+
+### 6.2. Tipografía
+
+| Rol | Fuente | Tamaño (en canvas 1080×1920) |
+|---|---|---|
+| Pregunta / veredicto (`estilo: "q"`) | Fraunces Bold 700 | 96px, interlineado 100 |
+| Mito / matiz / cierre (`estilo: "myth"`) | Fraunces MediumItalic 500 | 62px, interlineado 78 |
+| Números y correlaciones | IBM Plex Mono SemiBold 600, tabular | 104px |
+| Etiqueta de acto, metadata | IBM Plex Mono Regular 400 | 26px, letter-spacing 3.8 |
+| Cita académica al pie | IBM Plex Mono Regular 400 | 22px |
+
+Ninguna otra fuente, ningún otro peso.
+
+### 6.3. Layout del canvas (1080×1920)
+
+```
+y = 0      ┌──────────────────────────┐
+           │  zona segura superior    │  240px — no poner texto
+y = 240    ├──────────────────────────┤
+           │  etiqueta de acto        │  y ≈ 300
+           │                          │
+           │  ZONA DE ACCIÓN          │  el texto vive centrado aquí
+           │  márgenes: 82px a cada   │
+           │  lado (ancho útil 916)   │
+           │                          │
+y = 1555   ├──────────────────────────┤
+           │  BANDA INK (#0F0F0E)     │  365px — obligatoria en TODOS los frames
+           │  izq: "why · #NNN"       │  resuelve la UI blanca de Shorts
+           │  der: 3 dots crema 50%   │
+y = 1920   └──────────────────────────┘
+```
+
+**La banda inferior es obligatoria y no negociable.** Sin ella, la UI de YouTube
+Shorts (botones blancos, subtítulos) desaparece sobre el papel casi blanco y el
+espectador no encuentra los controles.
+
+### 6.4. Rotación de layout por acto
+
+Seis frames con la misma estructura leen como plantilla — exactamente lo que
+penaliza la política de contenido inauténtico de YouTube. La rotación es fija:
+
+| Acto | `layout` | Descripción |
+|---|---|---|
+| 1 | `photo_full` | Foto a sangre + scrim + texto encima |
+| 2 | `photo_band` | Foto como banda superior 34% + texto sobre papel |
+| 3 | `chart_only` | Sin foto. Papel + gráfico + cita |
+| 4 | `photo_full` | Foto a sangre + número o dato encima |
+| 5 | `photo_mirror` | Foto partida en dos mitades, la derecha volteada |
+| 6 | `photo_soft` | Foto con scrim parejo + texto centrado |
+
+`photo_mirror` es literal cuando el veredicto habla de simetría o reflejo; si
+no aplica al tema, usa `photo_full` y anótalo en el reporte.
+
+### 6.5. Tratamiento de foto (duotono)
+
+Las fotos de Pexels **nunca** se usan crudas. El duotono es lo que impide que el
+canal parezca un slideshow de stock. Script fijo:
+
+```python
+"""Apply the channel duotone treatment to a stock photo."""
+import random
+from PIL import Image, ImageEnhance, ImageOps
+
+PAPER_RGB = (251, 250, 245)
+INK_RGB   = (26, 18, 16)      # tinta cálida, NO negro neutro
+TARGET    = (1080, 1920)
+
+MIDTONES = {          # el midtone da la temperatura; rota por acto
+    1: (178, 80, 52), 2: (184, 112, 40), 4: (168, 76, 56),
+    5: (150, 100, 74), 6: (186, 124, 34),
+}
+
+def ramp(shadow, highlight, mid):
+    out = []
+    for i in range(256):
+        t = i / 255.0
+        if t < 0.5:
+            k = t * 2
+            rgb = [shadow[c] + (mid[c] - shadow[c]) * k for c in range(3)]
+        else:
+            k = (t - 0.5) * 2
+            rgb = [mid[c] + (highlight[c] - mid[c]) * k for c in range(3)]
+        out.append(tuple(int(v) for v in rgb))
+    return out
+
+def duotone(src, dst, act):
+    img = Image.open(src).convert("RGB")
+    img = ImageOps.fit(img, TARGET, Image.LANCZOS, centering=(0.5, 0.42))
+    img = ImageEnhance.Contrast(img.convert("L")).enhance(1.25)
+    table = ramp(INK_RGB, PAPER_RGB, MIDTONES[act])
+    r = img.point([c[0] for c in table])
+    g = img.point([c[1] for c in table])
+    b = img.point([c[2] for c in table])
+    img = Image.merge("RGB", (r, g, b))
+    grain = Image.new("L", img.size)
+    rnd = random.Random(7)                       # seed fija = grano reproducible
+    grain.putdata([rnd.randint(110, 145) for _ in range(img.size[0] * img.size[1])])
+    img = Image.blend(img, Image.merge("RGB", (grain, grain, grain)), 0.06)
+    img.save(dst, "JPEG", quality=88)
+```
+
+**Verificación obligatoria:** después de tratar, abre una imagen y confirma que
+tiene temperatura cálida visible. Si sale gris neutro, el midtone no se aplicó
+— revisa que estés pasando `mid` y no `None`.
+
+### 6.6. Gráfico (acto 3)
+
+matplotlib, sin estilo por defecto. Parámetros fijos:
+
+```python
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from matplotlib import font_manager
+
+font_manager.fontManager.addfont("fonts/IBMPlexMono-Regular.ttf")
+plt.rcParams.update({
+    "font.family": "IBM Plex Mono",
+    "figure.facecolor": "#FBFAF5",
+    "axes.facecolor": "#FBFAF5",
+    "axes.edgecolor": "#0F0F0E",
+    "axes.linewidth": 1.8,
+    "text.color": "#0F0F0E",
+    "xtick.color": "#6E6E68",
+    "ytick.color": "#6E6E68",
+    "font.size": 20,
+})
+
+fig, ax = plt.subplots(figsize=(9.16, 5.2), dpi=100)
+ax.spines[["top", "right", "left"]].set_visible(False)
+ax.set_yticks([])
+# serie principal en PUNCH (#EF3E36), lw=4
+# series de contraste en #C9C4BA, lw=2.4
+# sin grid, sin leyenda de matplotlib — las etiquetas van como texto al final
+# de cada línea, en IBM Plex Mono 18px
+fig.savefig("chart.png", transparent=False, bbox_inches="tight", pad_inches=0.3)
+```
+
+Reglas del gráfico:
+- Sin título dentro del gráfico (el título va como texto del frame).
+- Sin eje Y numerado. La forma es el mensaje, no los valores exactos.
+- Etiquetas de serie al final de cada línea, no en leyenda.
+- Máximo 2 series.
+
+### 6.7. Prohibiciones visuales
+
+- Fondos oscuros (la banda inferior es la única zona `INK`).
+- Cualquier fuente que no sea Fraunces o IBM Plex Mono.
+- Emojis, iconos decorativos, flechas de clip-art.
+- Gradientes de más de dos paradas.
+- Texto sobre foto sin scrim.
+- Fotos crudas sin duotono.
+- Sombras paralelas, bordes redondeados en el canvas del video.
+- Animaciones de texto que entren volando o rebotando.
+
+---
+
+## 7. Audio
+
+### 7.1. Voz
+
+**`en-US-AvaMultilingualNeural`, `--rate=+8%`, `--pitch=+0Hz`.**
+
+Misma voz que el noticiero y el deep dive — decisión deliberada, no inercia. Los
+tres canales comparten voz para que el archivo completo suene como una casa
+editorial y no como tres productos sueltos. Lo que diferencia este formato es el
+**ritmo**, no el timbre:
+
+| Formato | Rate | Registro |
+|---|---|---|
+| Noticiero | +13% | urgente, denso |
+| Deep dive | +13% | explicativo |
+| **Why** | **+8%** | **reflexivo — la pausa es parte del argumento** |
+
+A +8% cada frase aterriza antes de que empiece la siguiente. En un video donde
+el acto 5 tiene que sonar a conclusión y no a dato más, esa respiración es la
+mitad del efecto.
+
+**Si quieres comparar de oído** (un solo cambio de parámetro):
+`en-US-EmmaMultilingualNeural` (más grave, más cercana al registro de audiolibro)
+o `en-US-AndrewMultilingualNeural` (masculina, si el canal llega a tener voz
+propia). No cambies sin correr al menos 5 videos con cada una — la voz es de las
+decisiones que solo se evalúan con retención, no con gusto.
+
+### 7.2. Síntesis
+
+```bash
+edge-tts --voice "en-US-AvaMultilingualNeural" --rate=+8% --pitch=+0Hz \
+  --file acto_N.txt --write-media raw_N.mp3 --write-subtitles sub_N.srt
+ffmpeg -y -i raw_N.mp3 -af "apad=pad_dur=$PAD_N" -c:a libmp3lame -b:a 192k voz_N.mp3
+DUR_N=$(ffprobe -v error -show_entries format=duration -of csv=p=0 voz_N.mp3)
+```
+
+**Pads diferenciados por acto** — la respiración es narrativa, no técnica:
+
+| Acto | Pad | Por qué |
+|---|---|---|
+| 1 | 0.9s | la pregunta necesita quedar colgando |
+| 2, 3, 4 | 0.5s | el cuerpo del argumento fluye |
+| 5 | 0.9s | el veredicto necesita aire antes del cierre |
+| 6 | 1.2s | el cierre respira antes del corte |
+
+**Total: 50-62s.** Si pasa de 62s, acorta el acto más largo y regenera. Si baja
+de 48s, alarga los actos 3 y 4 — nunca el 1 ni el 5, que dependen de ser breves.
+
+### 7.3. Cama musical
+
+Reusa las camas existentes del canal (`bed_0..4_norm.mp3`), con
+la misma rotación por día que el noticiero y el deep dive:
+
+```bash
+IDX=$(( 10#$(date +%j) % 5 ))
+```
+
+La diferencia está en el **volumen: −17dB**, más bajo que los otros formatos
+(−14dB). El silencio entre frases es parte del tono editorial; la cama sostiene,
+no acompaña. Fade in 1.2s, fade out 2s.
+
+La rotación de cama es la única variación permitida entre videos de este canal
+— todo lo visual permanece fijo. La música cambia lo justo para que el archivo
+no se sienta idéntico al oído, sin tocar la identidad visual.
+
+```bash
+DUR_TOTAL=$(ffprobe -v error -show_entries format=duration -of csv=p=0 video_mudo.mp4)
+FADE_OUT=$(python3 -c "print(round($DUR_TOTAL-2,3))")
+ffmpeg -y -i video_mudo.mp4 -stream_loop -1 -i "audio/bed_${IDX}_norm.mp3" \
+  -filter_complex "[1:a]atrim=0:$DUR_TOTAL,volume=-17dB,afade=t=in:st=0:d=1.2,afade=t=out:st=$FADE_OUT:d=2[m];[0:a][m]amix=inputs=2:duration=first:normalize=0[a]" \
+  -map 0:v -map "[a]" -c:v copy -c:a aac -b:a 192k -movflags +faststart "$NOMBRE"
+```
+
+---
+
+## 8. Ensamblaje
+
+**Dos capas por acto, siempre.** `bg_N.jpg` (foto tratada o papel+gráfico) se
+anima con Ken Burns; `over_N.png` (texto + banda inferior, transparente) va
+**fijo encima**. El error clásico es aplicar el zoom al conjunto fusionado — el
+texto tiembla y el video se ve amateur.
+
+**Ken Burns suave: intensidad 0.10.** Mucho más contenido que el deep dive
+(0.18). El movimiento agresivo pelea con el registro editorial.
+
+Efecto por acto (fijo): 1 zoom-in · 2 estático · 3 estático · 4 zoom-in ·
+5 zoom-out · 6 zoom-out lento.
+
+Los actos 2 y 3 no se animan: el 2 porque la foto es solo una banda, el 3 porque
+un gráfico en movimiento es ilegible.
+
+```bash
+FPS=30
+FRAMES=$(python3 -c "print(round($DUR_N * $FPS))")
+
+ffmpeg -y -loop 1 -framerate $FPS -t "$DUR_N" -i bg_N.jpg \
+       -loop 1 -framerate $FPS -t "$DUR_N" -i over_N.png \
+       -i voz_N.mp3 \
+  -filter_complex "\
+    [0:v]scale=2160:3840,zoompan=z='min(1+0.10*on/$FRAMES\,1.10)':d=1:\
+x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1920:fps=$FPS,setsar=1[bg];\
+    [bg][1:v]overlay=0:0[v]" \
+  -map "[v]" -map 2:a -frames:v $FRAMES \
+  -c:v libx264 -profile:v high -preset medium -crf 20 -pix_fmt yuv420p \
+  -r $FPS -g 60 -c:a aac -b:a 192k -ar 48000 \
+  -movflags +faststart clip_N.mp4
+```
+
+Para actos estáticos (2 y 3), omite el `zoompan` y usa `scale=1080:1920` directo.
+
+**Letterbox:** todo shot lleva
+`force_original_aspect_ratio=increase,crop=1080:1920`. Sin excepción.
+
+Concatena con `-f concat -c copy` → `video_mudo.mp4`. Luego la cama (sección 7).
+
+**Nombre final:** `why_NNN_YYYYMMDD.mp4` (NNN = id de la idea).
+
+---
+
+## 9. GATE de render
+
+Antes de subir, verifica en un solo script y **aborta si algo falla**:
+
+```python
+"""Pre-upload validation. Halts the pipeline on any failure."""
+import subprocess, sys
+from PIL import Image
+
+def probe(path, key):
+    return subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries", key, "-of", "csv=p=0", path],
+        capture_output=True, text=True).stdout.strip()
+
+fails = []
+
+# 1. Duración total en rango
+dur = float(probe(NOMBRE, "format=duration"))
+if not 48 <= dur <= 62:
+    fails.append(f"duration {dur:.1f}s outside 48-62s")
+
+# 2. Resolución exacta
+res = probe(NOMBRE, "stream=width,height").replace("\n", "x")
+if res != "1080x1920":
+    fails.append(f"resolution {res} != 1080x1920")
+
+# 3. Pista de audio presente y no silenciosa
+if not probe(NOMBRE, "stream=codec_type").count("audio"):
+    fails.append("no audio stream")
+
+# 4. Cada overlay tiene píxeles no transparentes (el texto se renderizó)
+for n in range(1, 7):
+    im = Image.open(f"over_{n}.png").convert("RGBA")
+    if im.getextrema()[3][1] == 0:
+        fails.append(f"over_{n}.png is fully transparent — text failed to render")
+
+# 5. La banda inferior existe en cada frame
+for n in range(1, 7):
+    im = Image.open(f"over_{n}.png").convert("RGB")
+    px = im.getpixel((540, 1800))
+    if not all(v < 40 for v in px):
+        fails.append(f"act {n}: bottom INK band missing at y=1800")
+
+if fails:
+    print("RENDER_GATE=FAILED")
+    for f in fails:
+        print(f"  - {f}")
+    sys.exit(1)
+print("RENDER_GATE=OK")
+```
+
+**Si el gate falla, no subas.** Arregla y vuelve a correr, o entrega el mp4
+diciendo exactamente qué check falló. Nunca publiques saltando el gate.
+
+---
+
+## 10. SEO
+
+### `titulo_video`
+
+**La pregunta literal, sin adornos, más dos hashtags.** No reformules. La
+pregunta es la query que va a traer views durante años; cambiarla por algo
+"más atractivo" destruye el match de búsqueda.
+
+```
+Why does time speed up as you age? #psychology #science
+```
+
+Reglas:
+- Máximo 90 caracteres con los hashtags.
+- Dos hashtags máximo (tres o más los ignora YouTube).
+- Sin mayúsculas sostenidas, sin "!", sin "you won't believe".
+- Sin sufijos de relleno tipo "· explained".
+
+### `descripcion`
+
+Primeras dos líneas con el gancho y el veredicto (es lo visible antes del
+"…more"). Luego: resumen en 3-4 líneas, **las citas académicas completas con
+DOI**, créditos de Pexels, y 3-5 hashtags.
+
+Las citas en la descripción no son adorno — son la prueba pública de que el
+canal no inventa. Fórmalas así:
+
+```
+Source: Friedman, W. J., & Janssen, S. M. J. (2010). Aging and the speed of
+time. Acta Psychologica, 134(2), 130-141. doi:10.1016/j.actpsy.2010.01.004
+```
+
+### `tags`
+
+Llena hasta ~490 de los 500 caracteres.
+
+```python
+TAGS_BASE = [
+    "psychology", "human behavior", "social science", "why do we",
+    "psychology facts", "behavioral science", "science explained",
+    "cognitive science", "sociology", "research",
+]
+```
+
+Luego dinámicos del tema concreto: el fenómeno, el nombre del efecto, términos
+long-tail que alguien buscaría. Mide de verdad:
+`sum(len(t) for t in tags) + len(tags) - 1`.
+
+---
+
+## 11. Subtítulos (en/es/fr)
+
+Tres pistas por video. Se activan solo si el viewer prende CC, pero **indexan
+en los tres idiomas** — en un canal cuyo tráfico viene de búsqueda, eso importa
+más que en un formato de feed.
+
+### 11.1. Requisito de scope
+
+El `YT_REFRESH_TOKEN` necesita `https://www.googleapis.com/auth/youtube.force-ssl`
+además de `youtube.upload`. Sin ese scope, `captions().insert` falla con
+`insufficientPermissions`. Si falta, sáltate la sección y avísalo en la entrega
+— no abortes el video por esto.
+
+### 11.2. `subs_en.srt`
+
+edge-tts ya generó un `sub_N.srt` por acto en la sección 7. Cada uno arranca en
+00:00:00, así que hay que concatenarlos aplicando el **offset acumulado** de las
+duraciones reales medidas con ffprobe (`DUR_N`), no de las estimadas.
+
+Usa la misma función `parse_srt` + `_fmt` del deep dive, iterando actos 1..6
+(no 1..5).
+
+**Cuidado con los pads diferenciados.** Los actos 1, 5 y 6 llevan pads más
+largos (0.9s, 0.9s, 1.2s). El offset debe usar `DUR_N` medido *después* del pad,
+o los subtítulos se desfasan acumulativamente y el error llega a ~2s al final.
+
+### 11.3. `subs_es.srt` y `subs_fr.srt`
+
+Traduce tú mismo, cue por cue, **sin llamada externa y sin costo**. Reglas:
+
+- **Timestamps idénticos.** Nunca los modifiques: el audio y el video son los
+  mismos en las tres pistas.
+- **Nunca traduzcas fuentes académicas.** `Acta Psychologica` se queda igual en
+  las tres pistas. Igual los apellidos de autores, nombres de revistas, DOIs y
+  nombres de efectos con término técnico establecido.
+- **Términos con traducción canónica sí se traducen:** `time pressure` →
+  "presión de tiempo" / "pression temporelle"; `assortative mating` →
+  "emparejamiento selectivo" / "appariement assortatif". Si dudas, busca cómo lo
+  nombra la literatura académica en ese idioma, no cómo suena mejor.
+- **Números en formato local:** `1,865` (en) → `1.865` (es) → `1 865` (fr).
+  Decimales: `0.79` (en) → `0,79` (es/fr).
+- **Registro editorial, no doblaje.** Debe leerse como prosa de revista seria en
+  ese idioma. Traducción natural, no literal.
+- **Velocidad de lectura.** Español y francés corren ~20% más largos que el
+  inglés. Si un cue queda denso, acorta sin cambiar el sentido. **Nunca partas un
+  cue en dos** — rompe la sincronía.
+
+### 11.4. Por qué tres idiomas y no más
+
+Inglés es el audio. Español y francés son los dos mercados donde el nicho de
+divulgación psicológica tiene demanda alta y competencia baja, y son los dos
+idiomas de doblaje ya contemplados para los otros canales — mismo esfuerzo de
+traducción, infraestructura compartida. Añadir más idiomas antes de validar
+retención es trabajo sin señal.
+
+---
+
+## 12. Subida
+
+### 12.1. Modo piloto (actual)
+
+Mientras el canal "Why" no exista como canal propio, **los videos se suben al
+canal de AI Daily News** con las mismas credenciales del `.env`
+(`YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`), y **quedan privados
+de forma permanente** — sin `publishAt`, sin programación.
+
+Esto es deliberado: el objetivo del piloto es validar render, tono y ritmo sin
+contaminar el feed ni el historial de recomendaciones de un canal que ya tiene
+audiencia de otro nicho. Un video de psicología publicado en un canal de noticias
+de IA le enseña algoritmos equivocados a ambos.
+
+```python
+body = {
+    "snippet": {
+        "title": meta["titulo_video"],
+        "description": meta["descripcion"],
+        "tags": meta["tags"],
+        "categoryId": "27",            # Education
+    },
+    "status": {
+        "privacyStatus": "private",    # permanente, NO temporal
+        "selfDeclaredMadeForKids": False,
+        "containsSyntheticMedia": False,
+    },
+}
+resp = yt.videos().insert(
+    part="snippet,status", body=body,
+    media_body=MediaFileUpload(os.environ["NOMBRE"], resumable=True)).execute()
+vid = resp["id"]
+print(f"VIDEO_URL=https://www.youtube.com/watch?v={vid}")
+print(f"STUDIO_URL=https://studio.youtube.com/video/{vid}/edit")
+print("MODO=piloto privado en canal AI Daily News")
+```
+
+**No pases `publishAt` en modo piloto.** Si lo pasas, YouTube programa la
+publicación y el video se hace público solo — exactamente lo que no queremos.
+
+`containsSyntheticMedia: False` — voz sintética sobre stock real no requiere
+divulgación; no hay material realista alterado.
+
+### 12.2. Modo canal propio (cuando exista)
+
+Cuando el canal "Why" tenga sus propias credenciales, cambia dos cosas y nada más:
+
+- `privacyStatus: "private"` + `publishAt` a las **7:00am hora de Nueva York**.
+  El público de este formato consume en el commute matinal, no de madrugada.
+- Variables de entorno `YT_WHY_CLIENT_ID` / `YT_WHY_CLIENT_SECRET` /
+  `YT_WHY_REFRESH_TOKEN` en lugar de las genéricas.
+
+```python
+NY = ZoneInfo("America/New_York")
+ahora = datetime.now(NY)
+objetivo = ahora.replace(hour=7, minute=0, second=0, microsecond=0)
+if objetivo <= ahora:
+    objetivo += timedelta(days=1)
+publish_at = objetivo.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+```
+
+### 12.3. Captions
+
+Sube los tres tracks con `captions().insert` (ver sección 11). **Funcionan
+igual en modo piloto:** un video privado acepta captions, y así se valida el
+pipeline completo antes de tener canal propio.
+
+---
+
+## 13. Historial
+
+Tras la subida exitosa, actualiza dos archivos en
+`anmalaver/AI-Daily-news-assets`. **El orden importa:** escribe primero el
+historial, después la cola.
+
+El historial es lo que la rutina de mañana consulta para no repetir (sección
+2.2.1). Si solo uno de los dos pushes alcanza a pasar, tiene que ser ese.
+
+### 13.1. `topics-history/why-history.json` (primero)
+
+Inserta la entrada al inicio, filtra duplicados por `slug`, trunca a 20. Misma
+mecánica de `sha` + PUT que el deep dive.
+
+```json
+{
+  "fecha": "2026-10-07",
+  "id": "why-0007",
+  "slug": "time-speeds-up-with-age",
+  "question": "Why does time speed up as you age?",
+  "verdict": "It's not your age. It's your calendar.",
+  "source_doi": "10.1016/j.actpsy.2010.01.004",
+  "video_url": "https://www.youtube.com/watch?v=..."
+}
+```
+
+La inserción es idempotente: filtrar por `slug` antes de insertar significa que
+correr la rutina dos veces sobre el mismo tema no ensucia el archivo.
+
+### 13.2. `topics-history/why-queue.json` (después)
+
+Marca la idea usada como `"status": "published"` y añade `"video_url"`.
+
+### 13.3. Si algo falla
+
+**No bajes el video.** Ya está subido y en modo piloto está privado, así que no
+hay urgencia. Reporta en la entrega:
+
+- Cuál de los dos pushes falló y con qué error.
+- Las entradas JSON completas para pegar a mano.
+
+Un fallo en el push de la cola es recuperable solo: el cruce contra el historial
+de la sección 2.2.1 atrapa la idea mañana y la salta, reportando `QUEUE_DESYNC`.
+Un fallo en el push del historial es el que sí puede producir un duplicado — si
+ese falla, dilo de forma destacada en la entrega.
+
+---
+
+## 14. Entrega
+
+1. **La URL del video** al principio, y la de Studio.
+2. El mp4 y el `manifiesto.json`.
+3. **Los cuatro cortes del GATE de evidencia** con su veredicto — es lo que
+   permite auditar que el canal no está publicando pop-psychology.
+4. Las fuentes con DOI.
+5. Resultado del `RENDER_GATE`.
+6. Estado de captions y de los dos archivos de historial. Si el push del
+   **historial** falló, dilo de forma destacada — es el que puede causar un
+   duplicado mañana.
+7. **`QUEUE_DESYNC`**: los slugs que estaban `ready` en la cola pero ya
+   aparecían en el historial. Cada uno es una idea publicada cuyo `status` no se
+   actualizó; hay que corregirla a mano en el repo.
+8. Créditos de Pexels por acto.
+
+---
+
+## 15. Reglas de fallo
+
+- GATE de evidencia falla → descarta la pregunta, toma la siguiente de la cola.
+  Si la cola se agota, aborta y avisa. **Nunca publiques sin respaldo.**
+- GATE de render falla → no subas. Arregla o entrega el mp4 explicando el check.
+- Duotono sale gris → el midtone no se aplicó. Revisa antes de seguir.
+- Duración fuera de 48-62s → ajusta actos 3 y 4, nunca el 1 o el 5.
+- Fuente no verificable en fuente primaria → no la uses.
+- Subida falla → reporta el error exacto y deja el mp4. `invalid_grant` significa
+  token expirado: avísame.
+- Push de historial falla → el video ya está publicado, no lo bajes. Pega el JSON.
+  **Márcalo destacado en la entrega**: sin esa entrada, la corrida de mañana puede
+  producir el mismo tema otra vez.
+- Push de cola falla → recuperable solo. El cruce contra historial (2.2.1) la
+  salta mañana y reporta `QUEUE_DESYNC`. Pega el JSON igual.
+- Un slug aparece en cola como `ready` y también en el historial → sáltalo
+  siempre. Prefiere no publicar hoy antes que publicar un duplicado: la política
+  de contenido inauténtico penaliza a nivel de canal, no de video.
+- Algo irrecuperable → entrega lo que alcanzaste y di en qué sección paraste.
+
+---
+
+## 16. Reporte de ejecución
+
+Además de la entrega, dame:
+
+- **Número total de llamadas a herramientas** (bash, python, ffmpeg, ffprobe,
+  descargas, búsquedas web).
+- **Las 3 fases que más llamadas consumieron.**
+- **Cuántas preguntas descartó el GATE de evidencia** antes de encontrar una
+  viable, y en qué corte cayó cada una.
+- Si tuviste que **re-renderizar** algún acto y por qué.
+
+Esto es instrumentación para optimizar el harness. No cambia el video.
+
+---
+
+## Anexo A — Diferencias con el deep dive
+
+Para quien venga del otro prompt y asuma continuidad:
+
+| | Deep dive | Why |
+|---|---|---|
+| Actos | 5 | 6 |
+| Duración | ~90s | 50-62s |
+| Paleta | rotativa (5 pares) | **fija, una sola** |
+| Fondo | oscuro | **papel casi blanco** |
+| Fuentes | Space Grotesk + Barlow | **Fraunces + IBM Plex Mono** |
+| Ken Burns | 0.18 | **0.10** |
+| Voz rate | +13% | **+8%** |
+| Cama musical | −14dB | **−17dB** (mismas camas rotativas) |
+| Category ID | 28 (Sci & Tech) | **27 (Education)** |
+| Publicación | 4:00am NY | **7:00am NY** |
+| Disparador | noticia del día | **cola pre-investigada** |
+| Gancho | novedad | **contraintuición** |
+| Vida útil | días | **años** |
+
+## Anexo B — Por qué el harness está escrito así
+
+Notas de diseño, para quien lo edite después.
+
+**Las constantes visuales están congeladas** porque la variación entre videos no
+aporta identidad, la destruye. El deep dive rota paleta para que cada video se
+sienta fresco; este canal hace lo contrario — la repetición exacta es lo que hace
+que el espectador reconozca un video del canal en medio del scroll.
+
+**Los gates existen porque el modo de fallo de este formato es silencioso.** Un
+deep dive con un dato flojo se nota. Un video de psicología con un hallazgo no
+replicado se ve idéntico a uno sólido, y el daño reputacional llega meses
+después. Por eso el corte de replicación es explícito y nombra los efectos
+prohibidos: es más barato codificar la lista que confiar en que el modelo la
+recuerde.
+
+**La rotación de layout está fijada en tabla** y no se deja a criterio, porque
+es la defensa concreta contra la política de contenido inauténtico de YouTube
+(jul-2025): seis frames idénticos con distinto texto es exactamente el patrón
+que desmonetiza. La rotación tiene que ser estructural, no opcional.
+
+**Los scripts van completos en el prompt** en lugar de descritos, porque cada
+ida y vuelta de "escribe el script / córrelo / corrige" cuesta tokens y
+reintroduce variabilidad. El modelo que ejecuta no debe estar diseñando el
+duotono; debe estar corriéndolo.
+
+**El título es la pregunta literal** porque este canal no compite por el feed,
+compite por la búsqueda. Un título ingenioso gana el scroll de hoy; la pregunta
+exacta gana la query de los próximos tres años.
