@@ -396,9 +396,10 @@ no lo adaptes al tema. La identidad del canal vive aquí.
 
 ```python
 PAPER       = "#FBFAF5"   # fondo único
-INK         = "#0F0F0E"   # texto principal, banda inferior
+INK         = "#0F0F0E"   # texto principal sobre papel
 MUTED       = "#6E6E68"   # labels, metadata, citas
-PUNCH       = "#EF3E36"   # pregunta, comillas, dato alto — SOLO formas y display grande
+PUNCH       = "#EF3E36"   # SOLO: signo "?" final, punto del veredicto, comilla de
+                          # apertura, líneas. NUNCA una palabra ni una frase.
 PUNCH_DEEP  = "#C42820"   # punch cuando es texto ≤20px
 AMBER       = "#F5B800"   # SOLO fills: barras, bloques, subrayados
 AMBER_DEEP  = "#B07C00"   # ámbar cuando es texto
@@ -406,9 +407,18 @@ VERDICT     = "#00A67E"   # veredicto, display grande
 VERDICT_DEEP= "#00805F"   # verde cuando es texto pequeño
 ```
 
-**Regla única que gobierna la paleta: los colores saturados pintan formas, sus
-versiones `_DEEP` pintan letras.** Nunca `AMBER` como color de texto. Nunca
-`PUNCH` en texto menor a 20px.
+**Dos reglas gobiernan la paleta:**
+
+1. **Los colores saturados pintan formas; sus versiones `_DEEP` pintan letras.**
+   Nunca `AMBER` como color de texto. Nunca `PUNCH` en texto menor a 20px.
+2. **El fondo decide el color del texto, no el rol.** Ver la tabla obligatoria
+   de 6.3.1 — es la regla que más se rompe al ejecutar y la que produjo el peor
+   fallo de la primera versión: la pregunta entera en rojo sobre una foto
+   rojiza, y texto tinta sobre foto oscura.
+
+`PUNCH` y `VERDICT` **jamás pintan una frase**. Solo signos de puntuación
+aislados y líneas. El énfasis del canal lo carga el peso tipográfico de
+Fraunces Bold, no el color.
 
 ### 6.2. Tipografía
 
@@ -426,24 +436,150 @@ Ninguna otra fuente, ningún otro peso.
 
 ```
 y = 0      ┌──────────────────────────┐
-           │  zona segura superior    │  240px — no poner texto
+           │  zona segura superior    │  240px — sin texto
 y = 240    ├──────────────────────────┤
-           │  etiqueta de acto        │  y ≈ 300
+           │  etiqueta de acto  izq   │  y ≈ 300
+           │  "why · #NNN"      der   │  misma línea, mono 26px
            │                          │
-           │  ZONA DE ACCIÓN          │  el texto vive centrado aquí
-           │  márgenes: 82px a cada   │
-           │  lado (ancho útil 916)   │
+           │  ZONA DE ACCIÓN          │  y 380 → 1500
+           │  márgenes 82px           │  el texto vive centrado aquí
+           │  ancho útil 916          │  DEBE llenar 60-85% de la altura
            │                          │
-y = 1555   ├──────────────────────────┤
-           │  BANDA INK (#0F0F0E)     │  365px — obligatoria en TODOS los frames
-           │  izq: "why · #NNN"       │  resuelve la UI blanca de Shorts
-           │  der: 3 dots crema 50%   │
+y = 1500   ├──────────────────────────┤
+           │  ZONA DE REPOSO          │  420px — SIN TEXTO, nunca
+           │  la imagen/papel sigue   │  con degradado de legibilidad
 y = 1920   └──────────────────────────┘
 ```
 
-**La banda inferior es obligatoria y no negociable.** Sin ella, la UI de YouTube
-Shorts (botones blancos, subtítulos) desaparece sobre el papel casi blanco y el
-espectador no encuentra los controles.
+**No hay banda negra.** La versión anterior de este prompt pedía una franja
+`INK` sólida de 365px al pie. Fue un error: ocupaba el 19% del frame, cortaba la
+foto en seco y no aportaba información — el identificador `why · #NNN` se lee
+igual arriba.
+
+**La zona de reposo sustituye a la banda.** Últimos 420px sin texto propio, para
+que la UI de Shorts (botones blancos, subtítulos) tenga dónde vivir. Pero en vez
+de taparla con negro, se resuelve con un degradado que oscurece lo justo:
+
+- **Frames con foto** — el scrim de la sección 6.3.2 ya cubre esa zona. No hace
+  falta nada extra.
+- **Frame de papel (acto 3)** — degradado vertical de `#FBFAF5` en y=1500 a
+  `#CFC8BA` en y=1920. Es un gris cálido, **no negro**: basta para que un icono
+  blanco se distinga, sin romper el fondo de papel.
+
+```python
+"""Bottom readability gradient for the paper frame."""
+from PIL import Image, ImageDraw
+
+def rest_zone_gradient(canvas):
+    """Fade the bottom 420px from paper to a warm grey so white UI stays visible."""
+    top, bottom = (251, 250, 245), (207, 200, 186)
+    d = ImageDraw.Draw(canvas)
+    for i in range(420):
+        t = i / 419
+        # ease-in: imperceptible arriba, presente abajo
+        k = t * t
+        rgb = tuple(int(top[c] + (bottom[c] - top[c]) * k) for c in range(3))
+        d.line([(0, 1500 + i), (1080, 1500 + i)], fill=rgb)
+    return canvas
+```
+
+**El identificador sube.** `why · #NNN` va ahora en la línea de la etiqueta de
+acto, alineado a la derecha, mismo mono 26px, color según la tabla 6.3.1. Los
+tres dots desaparecen: no comunicaban nada.
+
+### 6.3.1. Color de texto por fondo — TABLA OBLIGATORIA
+
+**Esta es la regla que más se rompe al ejecutar.** La sección 6.1 define los
+colores por rol semántico, pero el rol no dice nada sobre el fondo. Sin este
+binding el modelo elige por su cuenta y produce tinta oscura sobre foto oscura,
+o la pregunta entera en rojo sobre una foto rojiza.
+
+**El fondo manda sobre el rol. Siempre.**
+
+| Elemento | Sobre papel (acto 3) | Sobre foto (actos 1,2,4,5,6) |
+|---|---|---|
+| Pregunta / veredicto | `INK` #0F0F0E | `PAPER` #FBFAF5 |
+| Mito / matiz / cierre | `INK` #0F0F0E | `PAPER` #FBFAF5 |
+| Etiqueta de acto, `why · #NNN` | `MUTED` #6E6E68 | `PAPER` al 62% de opacidad |
+| Cita académica | `MUTED` #6E6E68 | `PAPER` al 62% de opacidad |
+| Números grandes | `PUNCH_DEEP` / `AMBER_DEEP` | `#FF6B60` / `#F5B800` |
+| Cita textual (comillas `"`) | `PUNCH` #EF3E36 | `PUNCH` #EF3E36 |
+
+**El acento nunca pinta una frase completa.** `PUNCH` y `VERDICT` se usan
+exclusivamente en:
+- el signo final de la pregunta (`?`),
+- el punto final del veredicto (`.`),
+- la comilla de apertura del mito,
+- una línea o subrayado.
+
+Nunca en las palabras. Una pregunta completa en rojo sobre foto es ilegible y
+además grita — el contraste del canal viene del peso tipográfico, no del color.
+
+**El texto sobre foto lleva sombra siempre:** offset (0,3), blur 18,
+`rgba(15,15,14,0.55)`. Es lo que sostiene la legibilidad cuando el scrim no
+alcanza.
+
+### 6.3.2. Scrim adaptativo — MEDIDO, no fijo
+
+Un scrim de opacidad fija falla, porque las fotos de Pexels varían de luminancia
+entre sí y entre zonas. **Mide la región exacta bajo el texto y ajusta.**
+
+```python
+"""Adaptive scrim: darken only as much as the photo under the text requires."""
+from PIL import Image, ImageDraw, ImageStat
+
+TEXT_BOX = (82, 380, 998, 1500)   # la zona de acción
+TARGET_L = 78                     # luminancia máxima admitida bajo texto crema
+
+def needed_alpha(img):
+    """Return the scrim alpha (0-255) that brings the text region to TARGET_L."""
+    region = img.crop(TEXT_BOX).convert("L")
+    mean = ImageStat.Stat(region).mean[0]
+    if mean <= TARGET_L:
+        return 90                      # piso: siempre algo de scrim
+    alpha = int(255 * (mean - TARGET_L) / mean)
+    return max(90, min(215, alpha))    # techo para no matar la foto
+
+def apply_scrim(img):
+    a = needed_alpha(img)
+    ov = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    d = ImageDraw.Draw(ov)
+    # degradado vertical: más oscuro arriba y abajo, más claro al centro
+    for y in range(img.size[1]):
+        t = y / img.size[1]
+        edge = max(0.0, 1 - abs(t - 0.5) * 2)      # 0 en bordes, 1 al centro
+        val = int(a * (1 - 0.45 * edge))
+        d.line([(0, y), (img.size[0], y)], fill=(11, 10, 9, val))
+    return Image.alpha_composite(img.convert("RGBA"), ov).convert("RGB")
+```
+
+**Verificación obligatoria por frame:** tras componer, calcula el contraste real
+entre el color del texto y la media de la región que ocupa. **Mínimo 4.5:1.** Si
+no llega, sube el alpha del scrim en pasos de 20 y recompón. Si a 215 sigue sin
+llegar, **descarta esa foto y baja la siguiente** de `stimulus_queries` — la foto
+está mal, no el scrim.
+
+```python
+def contrast_ratio(rgb_a, rgb_b):
+    """WCAG contrast ratio between two RGB colors."""
+    def lum(c):
+        s = [v / 255 for v in c]
+        s = [v / 12.92 if v <= 0.03928 else ((v + 0.055) / 1.055) ** 2.4 for v in s]
+        return 0.2126 * s[0] + 0.7152 * s[1] + 0.0722 * s[2]
+    la, lb = sorted([lum(rgb_a), lum(rgb_b)], reverse=True)
+    return (la + 0.05) / (lb + 0.05)
+```
+
+### 6.3.3. Llenado vertical
+
+El texto debe ocupar **entre 60% y 85%** de la zona de acción (y 380→1500). Por
+debajo de 60% el frame se ve vacío y el texto diminuto; por encima de 85% se
+siente apretado.
+
+Si un acto queda corto, **sube el tamaño de fuente** hasta llenar — no dejes el
+tamaño base con aire muerto arriba y abajo. Los tamaños de la sección 6.2 son el
+punto de partida, y pueden crecer hasta un 25% para llenar. Nunca encoger por
+debajo del 85% del valor base.
 
 ### 6.4. Rotación de layout por acto
 
@@ -544,8 +680,13 @@ ax.set_yticks([])
 # series de contraste en #C9C4BA, lw=2.4
 # sin grid, sin leyenda de matplotlib — las etiquetas van como texto al final
 # de cada línea, en IBM Plex Mono 18px
-fig.savefig("chart.png", transparent=False, bbox_inches="tight", pad_inches=0.3)
+fig.savefig("chart.png", transparent=True, bbox_inches="tight", pad_inches=0.3)
 ```
+
+**Guarda el PNG con `transparent=True` y pégalo sobre el papel del frame.** Si
+lo guardas con fondo opaco, el `#FBFAF5` de matplotlib no coincide exactamente
+con el del canvas y aparece un rectángulo gris visible alrededor del gráfico
+— pasó en la primera corrida.
 
 Reglas del gráfico:
 - Sin título dentro del gráfico (el título va como texto del frame).
@@ -555,7 +696,11 @@ Reglas del gráfico:
 
 ### 6.7. Prohibiciones visuales
 
-- Fondos oscuros (la banda inferior es la única zona `INK`).
+- Fondos oscuros como superficie de diseño. El único oscurecimiento permitido es
+  el scrim sobre foto (6.3.2) y el degradado de reposo del frame de papel (6.3).
+- **Bandas o barras sólidas de color.** No hay franja inferior, ni cabecera, ni
+  bloques de color detrás del texto. El scrim es degradado, nunca un borde duro.
+- Texto en la zona de reposo (últimos 420px).
 - Cualquier fuente que no sea Fraunces o IBM Plex Mono.
 - Emojis, iconos decorativos, flechas de clip-art.
 - Gradientes de más de dos paradas.
@@ -644,7 +789,7 @@ ffmpeg -y -i video_mudo.mp4 -stream_loop -1 -i "audio/bed_${IDX}_norm.mp3" \
 ## 8. Ensamblaje
 
 **Dos capas por acto, siempre.** `bg_N.jpg` (foto tratada o papel+gráfico) se
-anima con Ken Burns; `over_N.png` (texto + banda inferior, transparente) va
+anima con Ken Burns; `over_N.png` (solo texto, fondo transparente) va
 **fijo encima**. El error clásico es aplicar el zoom al conjunto fusionado — el
 texto tiembla y el video se ve amateur.
 
@@ -692,7 +837,7 @@ Antes de subir, verifica en un solo script y **aborta si algo falla**:
 ```python
 """Pre-upload validation. Halts the pipeline on any failure."""
 import subprocess, sys
-from PIL import Image
+from PIL import Image, ImageStat
 
 def probe(path, key):
     return subprocess.run(
@@ -721,12 +866,35 @@ for n in range(1, 7):
     if im.getextrema()[3][1] == 0:
         fails.append(f"over_{n}.png is fully transparent — text failed to render")
 
-# 5. La banda inferior existe en cada frame
+# 5. Contraste real texto/fondo en cada frame — el check que atrapa el fallo
+#    más caro: texto ilegible. Compara el color del texto contra la media
+#    de la región que ocupa en el frame YA compuesto.
 for n in range(1, 7):
-    im = Image.open(f"over_{n}.png").convert("RGB")
-    px = im.getpixel((540, 1800))
-    if not all(v < 40 for v in px):
-        fails.append(f"act {n}: bottom INK band missing at y=1800")
+    frame = Image.open(f"frame_{n}.png").convert("RGB")
+    region = frame.crop((82, 380, 998, 1500))
+    mean = tuple(int(v) for v in ImageStat.Stat(region).mean)
+    ratio = contrast_ratio(TEXT_COLOR[n], mean)
+    if ratio < 4.5:
+        fails.append(f"act {n}: contrast {ratio:.1f}:1 below 4.5:1 minimum")
+
+# 6. Ninguna banda sólida al pie (regresión de la v1)
+for n in range(1, 7):
+    frame = Image.open(f"frame_{n}.png").convert("RGB")
+    strip = frame.crop((0, 1700, 1080, 1900)).convert("L")
+    st = ImageStat.Stat(strip)
+    if st.mean[0] < 25 and st.stddev[0] < 6:
+        fails.append(f"act {n}: solid dark band at bottom — banda eliminada en v2")
+
+# 7. Llenado vertical dentro de 60-85% de la zona de acción
+for n in range(1, 7):
+    ov = Image.open(f"over_{n}.png").convert("RGBA")
+    alpha = ov.crop((82, 380, 998, 1500)).getchannel("A")
+    rows = [y for y in range(alpha.height)
+            if alpha.crop((0, y, alpha.width, y + 1)).getextrema()[1] > 0]
+    if rows:
+        fill = (rows[-1] - rows[0]) / alpha.height
+        if not 0.60 <= fill <= 0.85:
+            fails.append(f"act {n}: vertical fill {fill:.0%} outside 60-85%")
 
 if fails:
     print("RENDER_GATE=FAILED")
@@ -1069,3 +1237,60 @@ duotono; debe estar corriéndolo.
 **El título es la pregunta literal** porque este canal no compite por el feed,
 compite por la búsqueda. Un título ingenioso gana el scroll de hoy; la pregunta
 exacta gana la query de los próximos tres años.
+
+
+---
+
+## Anexo C — Changelog
+
+### v2 (2026-09-19) — calibración tras la primera corrida real
+
+La corrida `why_live0919` produjo un video correcto en estructura, audio y
+ritmo, pero con dos fallos visuales. Ambos eran fallos **de este documento**, no
+del modelo que lo ejecutó:
+
+**1. Banda inferior negra — eliminada.**
+La v1 pedía una franja `INK` sólida de 365px al pie de todos los frames, para
+que la UI blanca de Shorts se distinguiera sobre papel casi blanco. El problema
+era real; la solución era desproporcionada: 19% del frame en negro plano,
+cortando la foto en seco y sin llevar información. Sustituida por la zona de
+reposo (6.3): 420px sin texto, con el scrim de la foto o un degradado cálido en
+el frame de papel. El identificador `why · #NNN` subió junto a la etiqueta de
+acto.
+
+**2. Contraste insuficiente — causa raíz identificada.**
+La v1 definía los colores por rol semántico ("PUNCH: pregunta, comillas") sin
+decir nunca qué color de texto corresponde a qué tipo de fondo. El modelo tuvo
+que inferirlo y lo resolvió distinto en cada acto: la pregunta completa en
+`PUNCH` sobre una foto rojiza (ilegible), y el matiz en `INK` sobre una foto
+oscura (ilegible). Peor, el documento literalmente listaba "pregunta" como uso
+de `PUNCH`, así que el modelo hizo lo que decía.
+
+Correcciones:
+- Tabla obligatoria 6.3.1 que vincula color de texto a tipo de fondo. El fondo
+  manda sobre el rol.
+- `PUNCH` y `VERDICT` restringidos a signos de puntuación aislados y líneas.
+  Nunca una palabra, nunca una frase.
+- Scrim adaptativo medido (6.3.2) en vez de opacidad fija, con descarte de la
+  foto si ni al máximo alcanza el contraste.
+- Sombra obligatoria en todo texto sobre foto.
+- Check de contraste WCAG ≥4.5:1 por frame en el gate de render, que aborta.
+
+**3. Costura del gráfico.** El PNG de matplotlib se guardaba con fondo opaco y
+su `#FBFAF5` no coincidía exactamente con el del canvas, dejando un rectángulo
+gris visible. Ahora `transparent=True`.
+
+**4. Llenado vertical.** El acto 3 dejaba ~400px muertos entre el pie del
+gráfico y la cita. Añadida la regla 6.3.3 (60-85% de la zona de acción) y su
+check en el gate.
+
+### Lección para futuras ediciones
+
+Los tres fallos comparten forma: **el documento especificaba el *qué* sin
+especificar el *cuándo*.** "PUNCH es para la pregunta" es una regla de rol;
+"sobre foto el texto es PAPER" es una regla de contexto. Un harness para un
+modelo ejecutor necesita las dos, y cuando falta la de contexto el modelo
+rellena el hueco con una decisión razonable que se ve mal.
+
+Al agregar cualquier regla nueva a este prompt, escríbela como binding
+condicional —  *si el fondo es X, entonces Y* — y no como atributo suelto.
