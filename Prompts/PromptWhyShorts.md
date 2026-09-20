@@ -269,16 +269,44 @@ comentario político.
 
 Escribe la historia completa primero, luego trocéala. El arco es fijo:
 
-| Acto | Función | Etiqueta | Narración |
-|---|---|---|---|
-| 1 | **La pregunta** — literal, sin adornos | `the question` | 8-12 palabras |
-| 2 | **El mito** — la respuesta que todos dan, con su origen | `the myth` | 18-24 palabras |
-| 3 | **El dato** — el estudio y su gráfico | `the data` | 22-30 palabras |
-| 4 | **El matiz** — qué predice de verdad el fenómeno | `the nuance` | 18-26 palabras |
-| 5 | **El veredicto** — la frase que reencuadra todo | `the verdict` | 10-16 palabras |
-| 6 | **El cierre** — una pregunta que devuelve al espectador a su vida | `takeaway` | 8-14 palabras |
+| Acto | Función | Statement | Línea de apoyo | Narración |
+|---|---|---|---|---|
+| 1 | **La pregunta** | la pregunta literal | — | 8-12 palabras |
+| 2 | **El mito** | la creencia entrecomillada | su atribución | 18-24 palabras |
+| 3 | **El dato** | la cifra que lo rompe | qué muestra el gráfico | 22-30 palabras |
+| 4 | **El matiz** | qué predice de verdad | por qué importa | 18-26 palabras |
+| 5 | **El veredicto** | la frase memorizable | la consecuencia | 10-16 palabras |
+| 6 | **El cierre** | la pregunta de vuelta | — | 8-14 palabras |
 
 **Total narración: 90-115 palabras (≈50-60s a rate +8%).**
+
+### 4.0. La línea de apoyo — densidad de lectura
+
+Cada acto salvo el 1 y el 6 lleva una **segunda línea** debajo del statement,
+en Fraunces MediumItalic 44px. No es decoración: en la corrida `why_003` los
+frames quedaron con una sola frase corta y mucho aire, y el espectador terminaba
+de leer en 2 segundos sobre un frame que dura 8. Ese hueco es donde se pierde
+retención — si no hay nada más que leer, se hace scroll.
+
+La línea de apoyo **no repite el statement con otras palabras**. Aporta el dato
+que el statement da por supuesto:
+
+| Acto | Statement | Línea de apoyo |
+|---|---|---|
+| 2 | *"Opposites attract."* | Folk wisdom. And its exact opposite, equally repeated. |
+| 3 | All 22 positive. | Across 79,000 couples. Not one trait went the other way. |
+| 4 | It's the funnel, not chemistry. | You meet people your life already sorted for you. |
+| 5 | You married your mirror. | And you picked it before you noticed. |
+
+Reglas:
+- **15-22 palabras.** Menos se lee como subtítulo suelto; más compite con el
+  statement.
+- **Va en el manifiesto** como campo `support` del acto, junto a `texto`.
+- **No se narra.** Es texto en pantalla únicamente — la voz dice el guion, los
+  ojos leen esto. Son dos canales distintos y llenarlos con lo mismo desperdicia
+  uno de los dos.
+- Actos 1 y 6 **no la llevan**: la pregunta de apertura y el cierre funcionan por
+  ser breves y quedar colgando.
 
 ### 4.1. Reglas de escritura por acto
 
@@ -327,6 +355,7 @@ below", "subscribe for more", "what do you think?".
       "etiqueta": "the question",
       "layout": "photo_full",
       "texto": ["Why does time", "speed up as", "you age?"],
+      "support": null,
       "estilo": "q",
       "guion": "Why does time speed up as you get older?",
       "stimulus": "vintage alarm clocks"
@@ -428,64 +457,86 @@ Fraunces Bold, no el color.
 | Mito / matiz / cierre (`estilo: "myth"`) | Fraunces MediumItalic 500 | 62px, interlineado 78 |
 | Números y correlaciones | IBM Plex Mono SemiBold 600, tabular | 104px |
 | Etiqueta de acto, metadata | IBM Plex Mono Regular 400 | 26px, letter-spacing 3.8 |
-| Cita académica al pie | IBM Plex Mono Regular 400 | 22px |
+| **Línea de apoyo** (`support`) | Fraunces MediumItalic 500 | 44px, interlineado 56 |
+| Pie de gráfico, `caption` | IBM Plex Mono Regular 400 | 34px |
+| Cita académica | IBM Plex Mono Regular 400 | 30px, interlineado 42 |
 
 Ninguna otra fuente, ningún otro peso.
+
+**Los tamaños de metadata subieron respecto a la v2** (cita 22→30px, caption
+26→34px). A 22px sobre un canvas de 1920 el texto es ilegible en un teléfono: en
+la corrida `why_003` la cita del paper quedó imposible de leer. La regla práctica:
+**nada por debajo de 30px en este canvas.**
 
 ### 6.3. Layout del canvas (1080×1920)
 
 ```
 y = 0      ┌──────────────────────────┐
-           │  zona segura superior    │  240px — sin texto
+           │  zona segura superior    │  240px — sin nada
 y = 240    ├──────────────────────────┤
-           │  etiqueta de acto  izq   │  y ≈ 300
-           │  "why · #NNN"      der   │  misma línea, mono 26px
            │                          │
-           │  ZONA DE ACCIÓN          │  y 380 → 1500
-           │  márgenes 82px           │  el texto vive centrado aquí
-           │  ancho útil 916          │  DEBE llenar 60-85% de la altura
+           │  ZONA DE ACCIÓN          │  y 280 → 1500
+           │  márgenes 82px           │  DEBE llenar 70-90% de la altura
+           │  ancho útil 916          │
            │                          │
 y = 1500   ├──────────────────────────┤
-           │  ZONA DE REPOSO          │  420px — SIN TEXTO, nunca
-           │  la imagen/papel sigue   │  con degradado de legibilidad
+           │  ZONA DE REPOSO          │  420px — sin texto
 y = 1920   └──────────────────────────┘
 ```
 
-**No hay banda negra.** La versión anterior de este prompt pedía una franja
-`INK` sólida de 365px al pie. Fue un error: ocupaba el 19% del frame, cortaba la
-foto en seco y no aportaba información — el identificador `why · #NNN` se lee
-igual arriba.
+**Sin etiquetas de acto.** La v2 imprimía `the question`, `the myth`, `the data`
+arriba a la izquierda. No aportan: el espectador no necesita que le anuncien en
+qué parte de la estructura va, y roban el espacio superior de la zona de acción.
+Eliminadas.
 
-**La zona de reposo sustituye a la banda.** Últimos 420px sin texto propio, para
-que la UI de Shorts (botones blancos, subtítulos) tenga dónde vivir. Pero en vez
-de taparla con negro, se resuelve con un degradado que oscurece lo justo:
-
-- **Frames con foto** — el scrim de la sección 6.3.2 ya cubre esa zona. No hace
-  falta nada extra.
-- **Frame de papel (acto 3)** — degradado vertical de `#FBFAF5` en y=1500 a
-  `#CFC8BA` en y=1920. Es un gris cálido, **no negro**: basta para que un icono
-  blanco se distinga, sin romper el fondo de papel.
+**Identificador `why · #NNN` arriba a la derecha**, mono 26px, color según 6.3.1.
+`NNN` es el número de la **idea**, tomado de `id` en la cola (`why-0003` → `003`)
+y **constante en los seis frames**. No es el número de acto — la v2 lo imprimía
+como `#001, #002, #003…` frame a frame, que es un bug: el mismo video mostraba
+cuatro identificadores distintos.
 
 ```python
-"""Bottom readability gradient for the paper frame."""
-from PIL import Image, ImageDraw
+IDEA_NUM = idea["id"].split("-")[-1]   # 'why-0003' -> '0003'
+BADGE = f"why · #{IDEA_NUM[-3:]}"      # -> 'why · #003'  (igual en los 6 frames)
+```
+
+**Zona de reposo.** Últimos 420px sin texto, para que la UI de Shorts tenga
+dónde vivir. Cómo se resuelve según el frame:
+
+- **Frames con foto** — el scrim adaptativo (6.3.2) ya oscurece esa zona. **No
+  apliques ningún degradado adicional.** La v2 superponía uno y producía una
+  franja gris con borde duro visible sobre la foto — exactamente la banda que se
+  había eliminado, reintroducida por otra vía.
+- **Frame de papel (solo acto 3)** — degradado de `#FBFAF5` a `#CFC8BA`, con
+  easing cuadrático para que no tenga borde perceptible.
+
+```python
+"""Bottom readability gradient — paper frame ONLY."""
+from PIL import ImageDraw
 
 def rest_zone_gradient(canvas):
-    """Fade the bottom 420px from paper to a warm grey so white UI stays visible."""
+    """Fade the bottom 420px so white Shorts UI stays visible on paper."""
     top, bottom = (251, 250, 245), (207, 200, 186)
     d = ImageDraw.Draw(canvas)
     for i in range(420):
-        t = i / 419
-        # ease-in: imperceptible arriba, presente abajo
-        k = t * t
+        k = (i / 419) ** 2                 # easing: invisible arriba
         rgb = tuple(int(top[c] + (bottom[c] - top[c]) * k) for c in range(3))
         d.line([(0, 1500 + i), (1080, 1500 + i)], fill=rgb)
     return canvas
 ```
 
-**El identificador sube.** `why · #NNN` va ahora en la línea de la etiqueta de
-acto, alineado a la derecha, mismo mono 26px, color según la tabla 6.3.1. Los
-tres dots desaparecen: no comunicaban nada.
+### 6.3.0. El papel es la excepción, no el default
+
+**Solo el acto 3 tiene fondo de papel.** Los otros cinco van con foto a sangre
+completa, texto encima con scrim.
+
+La v2 permitía `photo_band` en el acto 2: foto arriba al 34%, texto sobre papel
+abajo. Se ve flojo — parte el frame en dos, desperdicia la foto y el bloque
+blanco inferior lee como diapositiva de presentación, no como el canal.
+
+Regla: **si el frame no lleva gráfico, lleva foto a sangre.** El papel existe
+porque un gráfico necesita fondo claro para ser legible; fuera de ese caso no
+tiene justificación.
 
 ### 6.3.1. Color de texto por fondo — TABLA OBLIGATORIA
 
@@ -572,8 +623,8 @@ def contrast_ratio(rgb_a, rgb_b):
 
 ### 6.3.3. Llenado vertical
 
-El texto debe ocupar **entre 60% y 85%** de la zona de acción (y 380→1500). Por
-debajo de 60% el frame se ve vacío y el texto diminuto; por encima de 85% se
+El texto debe ocupar **entre 70% y 90%** de la zona de acción (y 380→1500). Por
+debajo de 60% el frame se ve vacío y el texto diminuto; por encima de 90% se
 siente apretado.
 
 Si un acto queda corto, **sube el tamaño de fuente** hasta llenar — no dejes el
@@ -583,20 +634,25 @@ debajo del 85% del valor base.
 
 ### 6.4. Rotación de layout por acto
 
-Seis frames con la misma estructura leen como plantilla — exactamente lo que
-penaliza la política de contenido inauténtico de YouTube. La rotación es fija:
+Seis frames idénticos en estructura leen como plantilla — el patrón que penaliza
+la política de contenido inauténtico de YouTube. La rotación es fija:
 
 | Acto | `layout` | Descripción |
 |---|---|---|
-| 1 | `photo_full` | Foto a sangre + scrim + texto encima |
-| 2 | `photo_band` | Foto como banda superior 34% + texto sobre papel |
-| 3 | `chart_only` | Sin foto. Papel + gráfico + cita |
-| 4 | `photo_full` | Foto a sangre + número o dato encima |
+| 1 | `photo_full` | Foto a sangre + scrim + pregunta centrada |
+| 2 | `photo_full` | Foto a sangre + mito entrecomillado, alineado a la izquierda |
+| 3 | `chart_only` | **Único frame de papel.** Gráfico + cifra + cita |
+| 4 | `photo_duo` | Foto a sangre, texto en dos bloques: dato arriba, lectura abajo |
 | 5 | `photo_mirror` | Foto partida en dos mitades, la derecha volteada |
-| 6 | `photo_soft` | Foto con scrim parejo + texto centrado |
+| 6 | `photo_full` | Foto a sangre + cierre centrado |
 
-`photo_mirror` es literal cuando el veredicto habla de simetría o reflejo; si
-no aplica al tema, usa `photo_full` y anótalo en el reporte.
+La variación ya no viene de alternar papel y foto — viene de **dónde vive el
+texto dentro del frame**: centrado, a la izquierda, en dos bloques, sobre un
+espejo. Es más sutil y se ve mucho mejor que partir frames en bandas.
+
+`photo_mirror` es literal cuando el veredicto habla de simetría o reflejo. Si no
+aplica al tema, usa `photo_full` con el texto desplazado hacia abajo y anótalo
+en el reporte.
 
 ### 6.5. Tratamiento de foto (duotono)
 
@@ -668,9 +724,10 @@ plt.rcParams.update({
     "axes.edgecolor": "#0F0F0E",
     "axes.linewidth": 1.8,
     "text.color": "#0F0F0E",
+    "xtick.labelsize": 30,
     "xtick.color": "#6E6E68",
     "ytick.color": "#6E6E68",
-    "font.size": 20,
+    "font.size": 30,
 })
 
 fig, ax = plt.subplots(figsize=(9.16, 5.2), dpi=100)
@@ -691,8 +748,28 @@ con el del canvas y aparece un rectángulo gris visible alrededor del gráfico
 Reglas del gráfico:
 - Sin título dentro del gráfico (el título va como texto del frame).
 - Sin eje Y numerado. La forma es el mensaje, no los valores exactos.
-- Etiquetas de serie al final de cada línea, no en leyenda.
+- Etiquetas de serie al final de cada línea, no en leyenda, **mínimo 30px**.
 - Máximo 2 series.
+- **Valores sobre las barras/puntos, mono SemiBold 32px.** Son el dato; tienen
+  que leerse sin esfuerzo.
+- **Etiquetas del eje X obligatorias y legibles (30px).** Un gráfico de barras
+  sin saber qué mide cada barra no informa nada. Si los nombres no caben,
+  reduce el número de barras — no el tamaño de la fuente.
+
+**El acto 3 debe llenar el frame.** En `why_003` el gráfico ocupó la franja
+central y dejó ~350px muertos arriba y ~300px abajo. Composición del frame de
+papel, de arriba a abajo dentro de la zona de acción (y 280→1500):
+
+| Elemento | Altura aprox. |
+|---|---|
+| Statement (la cifra que rompe el mito), Fraunces Bold | 200px |
+| Gráfico | 620px |
+| `caption` bajo el gráfico, mono 34px | 60px |
+| Línea de apoyo, Fraunces italic 44px | 120px |
+| Cita académica, mono 30px, 2-3 líneas | 130px |
+
+Suma ≈1130px de 1220 disponibles: 93% de llenado. Si sobra más de 150px, sube
+el alto del gráfico hasta consumirlo.
 
 ### 6.7. Prohibiciones visuales
 
@@ -701,6 +778,11 @@ Reglas del gráfico:
 - **Bandas o barras sólidas de color.** No hay franja inferior, ni cabecera, ni
   bloques de color detrás del texto. El scrim es degradado, nunca un borde duro.
 - Texto en la zona de reposo (últimos 420px).
+- **Etiquetas de acto** ("the question", "the data"). Eliminadas en v3.
+- **Fondo de papel fuera del acto 3.** Si no hay gráfico, hay foto a sangre.
+- **Degradado de reposo sobre frames con foto.** El scrim ya lo cubre; añadir
+  otro produce la franja gris con borde duro de la v2.
+- Texto por debajo de 30px en el canvas de 1920.
 - Cualquier fuente que no sea Fraunces o IBM Plex Mono.
 - Emojis, iconos decorativos, flechas de clip-art.
 - Gradientes de más de dos paradas.
@@ -893,8 +975,23 @@ for n in range(1, 7):
             if alpha.crop((0, y, alpha.width, y + 1)).getextrema()[1] > 0]
     if rows:
         fill = (rows[-1] - rows[0]) / alpha.height
-        if not 0.60 <= fill <= 0.85:
-            fails.append(f"act {n}: vertical fill {fill:.0%} outside 60-85%")
+        if not 0.70 <= fill <= 0.90:
+            fails.append(f"act {n}: vertical fill {fill:.0%} outside 70-90%")
+
+# 8. El badge es idéntico en los seis frames (bug de la v2: usaba el nº de acto)
+badges = {badge_text(n) for n in range(1, 7)}
+if len(badges) != 1:
+    fails.append(f"badge differs across acts: {sorted(badges)} — debe ser el id de la idea")
+
+# 9. Solo el acto 3 tiene fondo de papel
+for n in range(1, 7):
+    frame = Image.open(f"frame_{n}.png").convert("RGB")
+    corner = ImageStat.Stat(frame.crop((0, 300, 200, 500)).convert("L")).mean[0]
+    is_paper = corner > 215
+    if is_paper and n != 3:
+        fails.append(f"act {n}: paper background — solo el acto 3 lo lleva")
+    if not is_paper and n == 3:
+        fails.append("act 3: debe tener fondo de papel para el gráfico")
 
 if fails:
     print("RENDER_GATE=FAILED")
@@ -1294,3 +1391,46 @@ rellena el hueco con una decisión razonable que se ve mal.
 
 Al agregar cualquier regla nueva a este prompt, escríbela como binding
 condicional —  *si el fondo es X, entonces Y* — y no como atributo suelto.
+
+### v3 (2026-09-20) — segunda calibración
+
+La corrida `why_003` resolvió el contraste: el texto crema sobre foto con scrim
+adaptativo funcionó bien en los cinco frames con imagen. Los fallos restantes
+eran de composición y densidad.
+
+**1. Etiquetas de acto — eliminadas.** `the question`, `the myth`, `the data`
+arriba a la izquierda. No informaban nada: el espectador no necesita saber en
+qué parte de la estructura va, y ocupaban la franja superior de la zona de
+acción.
+
+**2. Fondos de papel fuera de lugar.** El layout `photo_band` del acto 2 (foto
+al 34% arriba, texto sobre blanco abajo) partía el frame en dos y leía como
+diapositiva. Eliminado. Ahora **solo el acto 3 tiene papel**, porque un gráfico
+lo necesita; los otros cinco van a foto a sangre. La variación entre frames la
+da ahora la posición del texto (centrado / izquierda / dos bloques / espejo),
+no el tipo de fondo.
+
+**3. Densidad de lectura.** Cada frame tenía una sola frase corta y mucho aire:
+el espectador terminaba de leer en 2s sobre un frame de 8s, y ese hueco es donde
+se pierde retención. Añadida la **línea de apoyo** (sección 4.0): 15-22 palabras
+en Fraunces italic 44px bajo el statement, en los actos 2-5. No se narra — la voz
+lleva el guion y los ojos leen otra cosa.
+
+**4. Tipografía de gráfico ilegible.** La cita académica a 22px y el caption a
+26px sobre un canvas de 1920 no se leen en un teléfono. Subidos a 30px y 34px, y
+`font.size` de matplotlib de 20 a 30. Regla nueva: **nada por debajo de 30px**.
+Añadidos valores sobre las barras y etiquetas de eje X obligatorias — un gráfico
+de barras sin saber qué mide cada barra no informa.
+
+**5. Bug del identificador.** `why · #NNN` se imprimía con el número de acto, así
+que un mismo video mostraba `#001`, `#002`, `#003` y `#004` en frames distintos.
+Debe ser el id de la idea, constante en los seis. Añadido check en el gate.
+
+**6. Franja gris reintroducida.** El degradado de la zona de reposo se aplicaba
+también sobre frames con foto, encima del scrim, produciendo una banda con borde
+duro visible — la misma banda que la v2 había eliminado, por otra vía. Ahora el
+degradado es exclusivo del frame de papel.
+
+**7. Llenado vertical.** Subido de 60-85% a 70-90%, y añadida la tabla de
+composición del acto 3, que en `why_003` dejó ~650px muertos entre el gráfico y
+los bordes de la zona de acción.
