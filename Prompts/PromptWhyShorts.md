@@ -187,9 +187,78 @@ Estructura de cada idea (ya pre-investigada, con fuente y chart definidos):
 }
 ```
 
+### 2.2.2. Los tres estados de una idea
+
+| `status` | Significa | La rutina |
+|---|---|---|
+| `ready` | Pasó el GATE de evidencia. Tiene `myth`, `verdict`, `chart_spec`, `sources` con DOI y `stimulus_queries`. | La produce |
+| `draft` | Candidata con fuente ancla identificada, **sin verificar**. | La promueve (2.2.3) |
+| `published` | Ya salió. | La ignora |
+
+La cola nunca debe quedarse sin `ready`. Cuando eso pasa, la rutina cae a
+minería improvisada, que es más cara y de calidad más variable que una idea
+pre-investigada.
+
+### 2.2.3. Reposición automática de la cola
+
+**Al final de cada corrida, después de publicar**, cuenta cuántas ideas quedan
+en `ready`. Si son **menos de 3**, promueve `draft` → `ready` hasta llegar a 5.
+
+Promover significa hacerle a la idea `draft` el trabajo completo:
+
+1. Pasarla por los **cuatro cortes del GATE** (sección 3). Si falla cualquiera,
+   márcala `status: "rejected"` con `reject_reason` y pasa a la siguiente draft.
+2. Verificar la `lead_source` en fuente primaria y registrar **cita completa +
+   DOI + n**.
+3. Escribir `myth`, `myth_attribution`, `verdict`, `takeaway`.
+4. Definir `chart_spec` con valores reales del estudio — nunca inventados ni
+   "ilustrativos". Si el paper no da cifras graficables, la idea falla el corte
+   de graficabilidad.
+5. Escribir 5 `stimulus_queries` de Pexels.
+6. Asignar `publish_date` consecutiva a la última fecha ocupada de la cola.
+7. `status: "ready"`.
+
+**Promueve como máximo 2 por corrida.** Verificar bien dos ideas cuesta menos y
+vale más que verificar cinco a medias, y la cola solo necesita ir un paso por
+delante.
+
+Si no quedan `draft` y `ready` bajó de 3, **entonces sí** haz minería en vivo
+(2.3), pero en modo "llenar cola": genera 5 candidatas nuevas, insértalas como
+`draft` y promueve 2. Así el fallback alimenta el sistema en vez de resolver
+solo el día.
+
+```python
+"""End-of-run queue top-up."""
+ready = [i for i in queue["ideas"] if i["status"] == "ready"]
+if len(ready) < 3:
+    drafts = [i for i in queue["ideas"] if i["status"] == "draft"]
+    for idea in drafts[:2]:
+        # aplicar GATE de la sección 3 + completar campos
+        ...
+    print(f"QUEUE_TOPUP: ready {len(ready)} -> {len(ready) + promovidas}")
+```
+
+**Reporta siempre `QUEUE_TOPUP`** en la entrega: cuántas quedaban, cuántas
+promoviste, cuáles rechazaste y por qué corte.
+
+### 2.2.4. Una idea por día, sin repetición
+
+El sistema completo que garantiza tema distinto cada día:
+
+1. La cola se recorre **en orden**, tomando la primera `ready` con fecha vencida.
+2. El cruce contra `why-history.json` (2.2.1) descarta cualquier slug ya
+   publicado, aunque su `status` haya quedado desfasado por un push fallido.
+3. Tras publicar, el slug entra al historial — **ese push va primero**, antes
+   que el de la cola (sección 13).
+4. La reposición (2.2.3) mantiene la cola con 3-5 `ready` por delante.
+
+El historial es la fuente de verdad de "qué ya salió"; la cola es la de "qué
+sale después". Si los dos se contradicen, **manda el historial**.
+
 ### 2.3. Minería en vivo (fallback)
 
-Solo si la cola está vacía. Busca candidatas en:
+Solo si la cola no tiene `ready` **ni** `draft`. Cuando entres aquí, trabaja en
+modo "llenar cola" (2.2.3): no resuelvas solo el día de hoy. Busca candidatas en:
 
 - Google autocomplete / People Also Ask con semillas `why do people…`,
   `why do we…`, `why does everyone…`
@@ -1339,20 +1408,25 @@ ese falla, dilo de forma destacada en la entrega.
    permite auditar que el canal no está publicando pop-psychology.
 4. Las fuentes con DOI.
 5. Resultado del `RENDER_GATE`.
-6. Estado de captions y de los dos archivos de historial. Si el push del
+6. **`QUEUE_TOPUP`**: cuántas `ready` quedaban, cuántas promoviste desde
+   `draft`, y cuáles rechazaste con el corte del gate que falló.
+7. Estado de captions y de los dos archivos de historial. Si el push del
    **historial** falló, dilo de forma destacada — es el que puede causar un
    duplicado mañana.
-7. **`QUEUE_DESYNC`**: los slugs que estaban `ready` en la cola pero ya
+8. **`QUEUE_DESYNC`**: los slugs que estaban `ready` en la cola pero ya
    aparecían en el historial. Cada uno es una idea publicada cuyo `status` no se
    actualizó; hay que corregirla a mano en el repo.
-8. Créditos de Pexels por acto.
+9. Créditos de Pexels por acto.
 
 ---
 
 ## 15. Reglas de fallo
 
-- GATE de evidencia falla → descarta la pregunta, toma la siguiente de la cola.
-  Si la cola se agota, aborta y avisa. **Nunca publiques sin respaldo.**
+- GATE de evidencia falla → descarta la pregunta, márcala `rejected` con
+  `reject_reason`, toma la siguiente de la cola. Si se agotan `ready` y `draft`,
+  haz minería en vivo (2.3) en modo llenar-cola. **Nunca publiques sin respaldo.**
+- Quedan menos de 3 `ready` al terminar → promueve hasta 2 `draft` (2.2.3). No
+  lo dejes para mañana: mañana la rutina arranca sin cola.
 - GATE de render falla → no subas. Arregla o entrega el mp4 explicando el check.
 - Duotono sale gris → el midtone no se aplicó. Revisa antes de seguir.
 - Duración fuera de 68-85s → ajusta actos 3 y 4, nunca el 1 o el 5.
@@ -1591,3 +1665,34 @@ corrige ambas midiendo una captura del reproductor.
 Para la próxima: **cualquier regla de layout debe validarse contra una captura
 del reproductor de Shorts con la UI encima, no contra el mp4 abierto en un
 visor.** El mp4 se ve perfecto en los dos casos donde el video real falla.
+
+### v5 (2026-09-20) — la cola se mantiene sola
+
+El diseño ya garantizaba "un tema distinto por día sin repetir", pero dependía
+de que alguien cargara ideas a mano. Con 2 ideas en cola eso dura dos días y
+luego el sistema cae a minería improvisada cada corrida — más cara, más lenta y
+de calidad más variable.
+
+**Tres estados en vez de dos:** `ready` (pasó el gate, lista para producir),
+`draft` (candidata con fuente ancla, sin verificar) y `published`. Más
+`rejected` para las que el gate tumba, con el motivo registrado — así no se
+reevalúa dos veces la misma idea mala.
+
+**Reposición al final de cada corrida (2.2.3).** Si quedan menos de 3 `ready`,
+la rutina promueve hasta 2 `draft`: las pasa por los cuatro cortes del gate,
+verifica la fuente en primaria, completa `chart_spec` con cifras reales del
+paper y asigna fecha. Tope de 2 por corrida — verificar bien dos vale más que
+cinco a medias, y la cola solo necesita ir un paso por delante.
+
+**El fallback ahora alimenta el sistema.** Antes, la minería en vivo resolvía el
+día y se olvidaba. Ahora genera 5 candidatas, las inserta como `draft` y promueve
+2, de modo que el siguiente día ya no tiene que improvisar.
+
+**Estado inicial cargado:** 1 `ready`, 8 `draft` y 1 `published`. Las 8 drafts
+salen de la investigación de nichos original y traen fuente ancla identificada
+pero **no verificada** — es deliberado: el gate tiene que correr sobre ellas, no
+darlas por buenas porque estén en el archivo.
+
+**Se creó `why-history.json`**, que no existía. Sin él, el cruce de 2.2.1 no
+tenía contra qué comparar y la primera idea publicada se habría reproducido
+entera al día siguiente.
