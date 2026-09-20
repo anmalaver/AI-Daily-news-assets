@@ -1,6 +1,6 @@
 # Rutina — Canal "Why" (una pregunta, 6 actos, shorts diarios)
 
-Produce **un short vertical en inglés** (~50-60 segundos) que responde **una
+Produce **un short vertical en inglés** (~70-85 segundos) que responde **una
 pregunta popular de psicología o sociología** con fuentes académicas reales y un
 gráfico de datos, en 6 actos. Al terminar, **súbelo a YouTube** y repórtame la URL.
 
@@ -271,73 +271,105 @@ Escribe la historia completa primero, luego trocéala. El arco es fijo:
 
 | Acto | Función | Statement | Línea de apoyo | Narración |
 |---|---|---|---|---|
-| 1 | **La pregunta** | la pregunta literal | — | 8-12 palabras |
-| 2 | **El mito** | la creencia entrecomillada | su atribución | 18-24 palabras |
-| 3 | **El dato** | la cifra que lo rompe | qué muestra el gráfico | 22-30 palabras |
-| 4 | **El matiz** | qué predice de verdad | por qué importa | 18-26 palabras |
-| 5 | **El veredicto** | la frase memorizable | la consecuencia | 10-16 palabras |
-| 6 | **El cierre** | la pregunta de vuelta | — | 8-14 palabras |
+| 1 | **El gancho** | la tensión, no la pregunta | la pregunta literal | 14-20 palabras |
+| 2 | **El mito** | la creencia entrecomillada | su origen y por qué pegó | 24-32 palabras |
+| 3 | **El dato** | la cifra que lo rompe | qué muestra el gráfico | 30-40 palabras |
+| 4 | **El mecanismo** | por qué pasa | cómo opera en la práctica | 30-40 palabras |
+| 5 | **El veredicto** | la frase memorizable | la consecuencia | 16-22 palabras |
+| 6 | **El cierre** | la pregunta de vuelta | — | 10-14 palabras |
 
-**Total narración: 90-115 palabras (≈50-60s a rate +8%).**
+**Total narración: 125-165 palabras (≈70-85s a rate +8%).**
 
-### 4.0. La línea de apoyo — densidad de lectura
+La v3 apuntaba a 90-115 palabras y 50-60s. Quedó corto: el video se veía bien
+pero se terminaba sin haber enseñado gran cosa. Un espectador que llega por una
+pregunta de psicología quiere **entender el mecanismo**, no solo saber que su
+intuición estaba mal. Subir a 70-85s es barato en retención y caro no hacerlo.
 
-Cada acto salvo el 1 y el 6 lleva una **segunda línea** debajo del statement,
-en Fraunces MediumItalic 44px. No es decoración: en la corrida `why_003` los
-frames quedaron con una sola frase corta y mucho aire, y el espectador terminaba
-de leer en 2 segundos sobre un frame que dura 8. Ese hueco es donde se pierde
-retención — si no hay nada más que leer, se hace scroll.
+### 4.0.1. El acto 4 cambió de función
 
-La línea de apoyo **no repite el statement con otras palabras**. Aporta el dato
-que el statement da por supuesto:
+Era "el matiz" — la variable que sí predice el fenómeno, en una frase. Ahora es
+**el mecanismo**: cómo funciona realmente la cosa, con suficiente detalle para
+que el espectador pueda explicárselo a alguien más al día siguiente.
 
-| Acto | Statement | Línea de apoyo |
-|---|---|---|
-| 2 | *"Opposites attract."* | Folk wisdom. And its exact opposite, equally repeated. |
-| 3 | All 22 positive. | Across 79,000 couples. Not one trait went the other way. |
-| 4 | It's the funnel, not chemistry. | You meet people your life already sorted for you. |
-| 5 | You married your mirror. | And you picked it before you noticed. |
+Es el acto con más peso informativo del video y el que justifica su existencia.
+Si al terminar de escribirlo el espectador no puede responder "¿y por qué pasa
+eso?", el acto no está hecho.
 
-Reglas:
-- **15-22 palabras.** Menos se lee como subtítulo suelto; más compite con el
-  statement.
-- **Va en el manifiesto** como campo `support` del acto, junto a `texto`.
-- **No se narra.** Es texto en pantalla únicamente — la voz dice el guion, los
-  ojos leen esto. Son dos canales distintos y llenarlos con lo mismo desperdicia
-  uno de los dos.
-- Actos 1 y 6 **no la llevan**: la pregunta de apertura y el cierre funcionan por
-  ser breves y quedar colgando.
+Estructura interna del acto 4, en las 30-40 palabras:
+1. El mecanismo en una frase.
+2. Cómo se manifiesta en un caso concreto y reconocible.
+3. Qué predice que la intuición popular no predice.
 
 ### 4.1. Reglas de escritura por acto
 
-**Acto 1 — la pregunta.** Escríbela exactamente como la buscaría alguien en
-Google. Sin reformular, sin hacerla "más interesante". Máximo 3 líneas de 16
-caracteres. La pregunta literal es el título del video y la query que lo va a
-encontrar durante años.
+**Acto 1 — el gancho.** Cambio importante respecto a la v3.
 
-**Acto 2 — el mito.** Dos elementos obligatorios: la creencia popular en voz
-de la gente, y **su atribución** (de dónde salió, quién la dijo, cuándo). La
-atribución es lo que convierte una opinión en un objeto examinable. Máximo 3
-líneas de 28 caracteres.
+La v3 ponía la pregunta literal en pantalla como statement. Es un gancho débil:
+una pregunta sin tensión no detiene el scroll, y el espectador ya sabe que el
+video va a responderla.
 
-**Acto 3 — el dato.** El estudio, la n, y el hallazgo. Una frase corta debajo
-del gráfico que diga qué estamos viendo. No expliques la metodología; di qué
-mostró. La cita académica va en texto pequeño al pie del frame.
+Ahora el statement es **la tensión**, y la pregunta baja a la línea de apoyo:
 
-**Acto 4 — el matiz.** Aquí va la variable que sí predice el fenómeno. Es el
-acto que evita que el video sea "los expertos dicen que no, punto". Responde:
-si no es lo que creíamos, ¿entonces qué?
+| Débil (v3) | Fuerte (v4) |
+|---|---|
+| Do opposites really attract? | Everyone believes this. 79,000 couples say otherwise. |
+| Why does time speed up as you age? | The explanation everyone repeats has never been measured. |
 
-**Acto 5 — el veredicto.** Una sola afirmación, máximo 3 líneas de 16
-caracteres. Debe ser **memorizable y citable**. Reglas duras:
+El gancho nombra el conflicto entre lo que se cree y lo que se midió. La
+pregunta literal sigue siendo el **título del video** — ahí sí va textual,
+porque es la query de búsqueda. En pantalla va la tensión.
+
+Máximo 4 líneas de 20 caracteres.
+
+**Acto 2 — el mito.** La creencia popular entrecomillada, más su atribución y
+**por qué pegó**. Ese "por qué pegó" es nuevo: casi siempre hay una razón (suena
+bien, confirma algo que queremos creer, viene de un estudio mal leído), y
+nombrarla ya es información.
+
+**Acto 3 — el dato.** El estudio, la n y el hallazgo. La cifra que rompe el mito
+va como statement en grande. Si el estudio tiene un segundo hallazgo relevante,
+métrelo en la línea de apoyo — no lo desperdicies.
+
+**Acto 4 — el mecanismo.** Ver 4.0.1.
+
+**Acto 5 — el veredicto.** Una afirmación, máximo 4 líneas de 20 caracteres.
+Memorizable y citable. Reglas duras:
 - Afirmación, nunca pregunta.
 - Anclada en el dato del acto 3, no en especulación nueva.
 - Sin "quizás", "podría ser", "los expertos sugieren".
 - Sin moraleja. "You married your mirror." sí. "Love is complex." no.
 
-**Acto 6 — el cierre.** Una pregunta corta que el espectador pueda contestarse
-a sí mismo hoy. Es lo que genera comentarios sin pedirlos. Prohibido: "comment
-below", "subscribe for more", "what do you think?".
+La línea de apoyo del acto 5 lleva **la consecuencia**: qué cambia si esto es
+cierto. Es lo que convierte el veredicto en algo utilizable.
+
+**Acto 6 — el cierre.** Una pregunta corta que el espectador pueda contestarse a
+sí mismo hoy. Prohibido: "comment below", "subscribe for more", "what do you
+think?".
+
+### 4.1.1. La línea de apoyo — densidad de lectura
+
+Todos los actos salvo el 6 llevan una **segunda línea** bajo el statement, en
+Fraunces MediumItalic 42px. No es decoración: en `why_003` los frames tenían una
+sola frase corta y mucho aire, y el espectador terminaba de leer en 2 segundos
+sobre un frame de 8. Ese hueco es donde se pierde retención.
+
+La línea de apoyo **no repite el statement con otras palabras**. Aporta lo que el
+statement da por supuesto:
+
+| Acto | Statement | Línea de apoyo |
+|---|---|---|
+| 1 | Everyone believes this. 79,000 couples say otherwise. | Do opposites really attract? |
+| 2 | *"Opposites attract."* | Folk wisdom — and its exact opposite, repeated just as often. |
+| 3 | Correlated on almost everything. | 133 traits measured. Not one came out negative. |
+| 4 | It's the funnel, not chemistry. | You only ever meet people your schooling, city and job already filtered. |
+| 5 | You married your mirror. | Which means compatibility was decided before you met. |
+
+Reglas:
+- **15-25 palabras**, máximo 4 líneas de 34 caracteres.
+- Va en el manifiesto como campo `support` del acto.
+- **No se narra.** La voz lleva el guion, los ojos leen esto. Son dos canales;
+  llenarlos con lo mismo desperdicia uno.
+- El acto 6 no la lleva: el cierre funciona por quedar colgando.
 
 ### 4.2. Manifiesto
 
@@ -470,60 +502,110 @@ la corrida `why_003` la cita del paper quedó imposible de leer. La regla práct
 
 ### 6.3. Layout del canvas (1080×1920)
 
+Medido sobre una captura real del reproductor de Shorts, no estimado. La UI de
+YouTube ocupa **mucho más de lo que parece**, y no solo abajo: el riel de
+botones (me gusta, comentar, guardar, compartir) come la franja derecha en toda
+la mitad inferior.
+
 ```
-y = 0      ┌──────────────────────────┐
-           │  zona segura superior    │  240px — sin nada
-y = 240    ├──────────────────────────┤
-           │                          │
-           │  ZONA DE ACCIÓN          │  y 280 → 1500
-           │  márgenes 82px           │  DEBE llenar 70-90% de la altura
-           │  ancho útil 916          │
-           │                          │
-y = 1500   ├──────────────────────────┤
-           │  ZONA DE REPOSO          │  420px — sin texto
-y = 1920   └──────────────────────────┘
+y = 0      ┌──────────────────────────────┐
+           │   zona segura superior       │  260px — sin nada
+y = 260    ├──────────────────────────────┤
+           │                              │
+           │   ZONA A — ancho completo    │  x 82 → 998
+           │   statement principal        │  y 260 → 880
+           │                              │
+y = 880    ├───────────────────┬──────────┤
+           │  ZONA B           │  RIEL DE │  x 82 → 860
+           │  texto secundario │  BOTONES │  y 880 → 1400
+           │  apoyo, caption,  │  (UI de  │
+           │  cita             │  YouTube)│
+y = 1400   ├───────────────────┴──────────┤
+           │   MUERTA — nombre de canal,  │  520px
+           │   título, controles          │  NADA aquí, nunca
+y = 1920   └──────────────────────────────┘
 ```
 
-**Sin etiquetas de acto.** La v2 imprimía `the question`, `the myth`, `the data`
-arriba a la izquierda. No aportan: el espectador no necesita que le anuncien en
-qué parte de la estructura va, y roban el espacio superior de la zona de acción.
-Eliminadas.
+| Zona | x | y | Qué va |
+|---|---|---|---|
+| A | 82 → 998 | 260 → 880 | Statement principal, gráfico |
+| B | 82 → **860** | 880 → 1400 | Apoyo, caption, cita, números |
+| Muerta | — | 1400 → 1920 | **Nada** |
 
-**Identificador `why · #NNN` arriba a la derecha**, mono 26px, color según 6.3.1.
-`NNN` es el número de la **idea**, tomado de `id` en la cola (`why-0003` → `003`)
-y **constante en los seis frames**. No es el número de acto — la v2 lo imprimía
-como `#001, #002, #003…` frame a frame, que es un bug: el mismo video mostraba
-cuatro identificadores distintos.
+**El límite de x=860 en la zona B no es negociable.** En la corrida `why_003`
+el caption y la línea de apoyo se extendían hasta x=998 y quedaron literalmente
+debajo de los botones "Me gusta" y "Guardar" — texto que el espectador nunca
+puede leer.
+
+**La zona muerta son 520px, no 420.** La fila con el nombre del canal y el
+título del video empieza en y≈1426 en coordenadas de video.
 
 ```python
-IDEA_NUM = idea["id"].split("-")[-1]   # 'why-0003' -> '0003'
-BADGE = f"why · #{IDEA_NUM[-3:]}"      # -> 'why · #003'  (igual en los 6 frames)
+ZONE_A = (82, 260, 998, 880)     # statement, gráfico
+ZONE_B = (82, 880, 860, 1400)    # apoyo, caption, cita
+# y > 1400: prohibido
 ```
 
-**Zona de reposo.** Últimos 420px sin texto, para que la UI de Shorts tenga
-dónde vivir. Cómo se resuelve según el frame:
+**Identificador `why · #NNN`**: arriba a la derecha, dentro de la zona segura
+superior pero **por debajo de y=200** — en la captura quedó pisado por la hora
+y la batería del teléfono. Mejor: muévelo al pie de la zona B, alineado a la
+izquierda, mono 26px. Ahí nada lo tapa.
 
-- **Frames con foto** — el scrim adaptativo (6.3.2) ya oscurece esa zona. **No
-  apliques ningún degradado adicional.** La v2 superponía uno y producía una
-  franja gris con borde duro visible sobre la foto — exactamente la banda que se
-  había eliminado, reintroducida por otra vía.
-- **Frame de papel (solo acto 3)** — degradado de `#FBFAF5` a `#CFC8BA`, con
-  easing cuadrático para que no tenga borde perceptible.
+`NNN` sale del `id` de la idea (`why-0003` → `003`) y es **constante en los seis
+frames**.
+
+```python
+IDEA_NUM = idea["id"].split("-")[-1]
+BADGE = f"why · #{IDEA_NUM[-3:]}"      # igual en los 6 frames
+```
+
+**Zona de reposo.** Con foto, el scrim adaptativo (6.3.2) ya cubre y>1400. **No
+apliques degradado adicional sobre foto** — produce la franja gris con borde
+duro. En el frame de papel (solo acto 3), degradado de `#FBFAF5` a `#CFC8BA`
+con easing cuadrático, empezando en y=1400.
 
 ```python
 """Bottom readability gradient — paper frame ONLY."""
 from PIL import ImageDraw
 
 def rest_zone_gradient(canvas):
-    """Fade the bottom 420px so white Shorts UI stays visible on paper."""
     top, bottom = (251, 250, 245), (207, 200, 186)
     d = ImageDraw.Draw(canvas)
-    for i in range(420):
-        k = (i / 419) ** 2                 # easing: invisible arriba
+    for i in range(520):
+        k = (i / 519) ** 2
         rgb = tuple(int(top[c] + (bottom[c] - top[c]) * k) for c in range(3))
-        d.line([(0, 1500 + i), (1080, 1500 + i)], fill=rgb)
+        d.line([(0, 1400 + i), (1080, 1400 + i)], fill=rgb)
     return canvas
 ```
+
+### 6.3.-1. Medida de línea — comprimir, no encoger
+
+**Cuando el texto no cabe, acorta la línea y añade líneas. Nunca bajes la
+fuente.** El tamaño es lo que hace el canal legible en un teléfono; la medida
+de línea es lo que lo hace caber.
+
+| Rol | Máx. caracteres por línea | Máx. líneas |
+|---|---|---|
+| Statement (`q`) | **20** | 4 |
+| Mito / matiz / cierre (`myth`) | **26** | 4 |
+| Línea de apoyo (`support`) | **34** | 4 |
+| Caption de gráfico | **38** | 2 |
+| Cita académica | **42** | 3 |
+
+Interlineados más cerrados que la v3, porque con más líneas el bloque necesita
+compactarse:
+
+| Rol | Tamaño | Interlineado |
+|---|---|---|
+| Statement | 96px | **98** |
+| Myth | 62px | **72** |
+| Support | 42px | **52** |
+| Caption | 34px | 44 |
+| Cita | 30px | 40 |
+
+El resultado es un bloque más denso y más alto: exactamente lo que se busca.
+Un statement de 4 líneas cortas se lee más rápido que uno de 2 líneas largas, y
+llena la zona A sin necesidad de agrandar la fuente.
 
 ### 6.3.0. El papel es la excepción, no el default
 
@@ -777,7 +859,8 @@ el alto del gráfico hasta consumirlo.
   el scrim sobre foto (6.3.2) y el degradado de reposo del frame de papel (6.3).
 - **Bandas o barras sólidas de color.** No hay franja inferior, ni cabecera, ni
   bloques de color detrás del texto. El scrim es degradado, nunca un borde duro.
-- Texto en la zona de reposo (últimos 420px).
+- Texto por debajo de y=1400, o a la derecha de x=860 entre y 880 y 1400.
+- Bajar el tamaño de fuente para que quepa el texto. Se acorta la línea, no la letra.
 - **Etiquetas de acto** ("the question", "the data"). Eliminadas en v3.
 - **Fondo de papel fuera del acto 3.** Si no hay gráfico, hay foto a sangre.
 - **Degradado de reposo sobre frames con foto.** El scrim ya lo cubre; añadir
@@ -838,8 +921,8 @@ DUR_N=$(ffprobe -v error -show_entries format=duration -of csv=p=0 voz_N.mp3)
 | 5 | 0.9s | el veredicto necesita aire antes del cierre |
 | 6 | 1.2s | el cierre respira antes del corte |
 
-**Total: 50-62s.** Si pasa de 62s, acorta el acto más largo y regenera. Si baja
-de 48s, alarga los actos 3 y 4 — nunca el 1 ni el 5, que dependen de ser breves.
+**Total: 70-85s.** Si pasa de 85s, acorta el acto más largo y regenera. Si baja
+de 68s, alarga los actos 3 y 4 — nunca el 1 ni el 5, que dependen de ser breves.
 
 ### 7.3. Cama musical
 
@@ -930,8 +1013,8 @@ fails = []
 
 # 1. Duración total en rango
 dur = float(probe(NOMBRE, "format=duration"))
-if not 48 <= dur <= 62:
-    fails.append(f"duration {dur:.1f}s outside 48-62s")
+if not 68 <= dur <= 85:
+    fails.append(f"duration {dur:.1f}s outside 68-85s")
 
 # 2. Resolución exacta
 res = probe(NOMBRE, "stream=width,height").replace("\n", "x")
@@ -967,10 +1050,10 @@ for n in range(1, 7):
     if st.mean[0] < 25 and st.stddev[0] < 6:
         fails.append(f"act {n}: solid dark band at bottom — banda eliminada en v2")
 
-# 7. Llenado vertical dentro de 60-85% de la zona de acción
+# 7. Llenado y respeto de zonas seguras
 for n in range(1, 7):
     ov = Image.open(f"over_{n}.png").convert("RGBA")
-    alpha = ov.crop((82, 380, 998, 1500)).getchannel("A")
+    alpha = ov.crop((82, 260, 998, 1400)).getchannel("A")
     rows = [y for y in range(alpha.height)
             if alpha.crop((0, y, alpha.width, y + 1)).getextrema()[1] > 0]
     if rows:
@@ -992,6 +1075,24 @@ for n in range(1, 7):
         fails.append(f"act {n}: paper background — solo el acto 3 lo lleva")
     if not is_paper and n == 3:
         fails.append("act 3: debe tener fondo de papel para el gráfico")
+
+# 10. Nada de texto en la zona muerta (y > 1400) ni bajo el riel de botones
+for n in range(1, 7):
+    ov = Image.open(f"over_{n}.png").convert("RGBA")
+    dead = ov.crop((0, 1400, 1080, 1920)).getchannel("A")
+    if dead.getextrema()[1] > 0:
+        fails.append(f"act {n}: texto en la zona muerta (y>1400)")
+    rail = ov.crop((860, 880, 1080, 1400)).getchannel("A")
+    if rail.getextrema()[1] > 0:
+        fails.append(f"act {n}: texto bajo el riel de botones (x>860, y 880-1400)")
+
+# 11. Medida de línea — ninguna línea supera su máximo de caracteres
+for n, lines in RENDERED_LINES.items():          # dict acto -> {rol: [str, ...]}
+    for rol, ls in lines.items():
+        cap = {"q": 20, "myth": 26, "support": 34, "caption": 38, "cite": 42}[rol]
+        for line in ls:
+            if len(line) > cap:
+                fails.append(f"act {n} {rol}: linea de {len(line)} chars (max {cap})")
 
 if fails:
     print("RENDER_GATE=FAILED")
@@ -1254,7 +1355,7 @@ ese falla, dilo de forma destacada en la entrega.
   Si la cola se agota, aborta y avisa. **Nunca publiques sin respaldo.**
 - GATE de render falla → no subas. Arregla o entrega el mp4 explicando el check.
 - Duotono sale gris → el midtone no se aplicó. Revisa antes de seguir.
-- Duración fuera de 48-62s → ajusta actos 3 y 4, nunca el 1 o el 5.
+- Duración fuera de 68-85s → ajusta actos 3 y 4, nunca el 1 o el 5.
 - Fuente no verificable en fuente primaria → no la uses.
 - Subida falla → reporta el error exacto y deja el mp4. `invalid_grant` significa
   token expirado: avísame.
@@ -1292,7 +1393,7 @@ Para quien venga del otro prompt y asuma continuidad:
 | | Deep dive | Why |
 |---|---|---|
 | Actos | 5 | 6 |
-| Duración | ~90s | 50-62s |
+| Duración | ~90s | **70-85s** |
 | Paleta | rotativa (5 pares) | **fija, una sola** |
 | Fondo | oscuro | **papel casi blanco** |
 | Fuentes | Space Grotesk + Barlow | **Fraunces + IBM Plex Mono** |
@@ -1434,3 +1535,59 @@ degradado es exclusivo del frame de papel.
 **7. Llenado vertical.** Subido de 60-85% a 70-90%, y añadida la tabla de
 composición del acto 3, que en `why_003` dejó ~650px muertos entre el gráfico y
 los bordes de la zona de acción.
+
+### v4 (2026-09-20) — zonas seguras reales y profundidad de contenido
+
+Calibrado contra una captura del reproductor de Shorts, no contra el mp4 suelto.
+Ver el video fuera del reproductor oculta el fallo más caro.
+
+**1. Las zonas seguras estaban mal medidas.** El prompt asumía que la UI de
+YouTube solo comía los últimos 420px. En realidad:
+- El **riel de botones** (me gusta, comentar, guardar, compartir) ocupa desde
+  x≈905 en toda la franja y 880→1400. En `why_003` el caption y la línea de
+  apoyo se extendían hasta x=998 y quedaron literalmente debajo de "Me gusta" y
+  "Guardar" — texto que nadie puede leer.
+- La fila con el nombre del canal y el título empieza en y≈1426, no en 1500.
+
+Nueva geometría en dos zonas: **A** (ancho completo, y 260→880) para el
+statement y el gráfico; **B** (x hasta 860, y 880→1400) para apoyo, caption y
+cita; y zona muerta de 520px. Dos checks nuevos en el gate abortan si hay
+píxeles de texto en cualquiera de las dos regiones prohibidas.
+
+**2. Comprimir en vez de encoger.** Al reducirse el ancho útil, la tentación es
+bajar la fuente — que es exactamente lo que rompió la legibilidad en la v2.
+Regla nueva (6.3.-1): **el tamaño no se toca; se acorta la medida de línea y se
+añaden líneas.** Statement a 20 caracteres por línea, apoyo a 34, con
+interlineados más cerrados. Un statement de 4 líneas cortas se lee más rápido
+que uno de 2 largas y llena mejor la zona A.
+
+**3. El video no enseñaba lo suficiente.** A 50-60s el formato se veía bien pero
+se terminaba sin haber explicado nada: el espectador salía sabiendo que su
+intuición estaba mal, sin entender por qué. Tres cambios:
+
+- **Duración a 70-85s** (125-165 palabras de narración).
+- **El acto 4 pasó de "el matiz" a "el mecanismo"**: cómo funciona realmente la
+  cosa, con detalle suficiente para que el espectador pueda explicárselo a
+  alguien al día siguiente. Es el acto que justifica el video.
+- **El acto 5 gana una consecuencia** en su línea de apoyo: qué cambia si esto
+  es cierto.
+
+**4. El hook era débil.** El acto 1 mostraba la pregunta literal, que no genera
+tensión — el espectador ya sabe que el video va a responderla. Ahora el
+statement es **el conflicto** ("Everyone believes this. 79,000 couples say
+otherwise.") y la pregunta literal baja a la línea de apoyo. El título del video
+sigue siendo la pregunta textual, porque ahí sí es la query de búsqueda.
+
+**5. El identificador se movió al pie de la zona B.** Arriba a la derecha
+quedaba pisado por la hora y la batería del teléfono.
+
+### Lección acumulada
+
+Las tres calibraciones (v2, v3, v4) fallaron en lo mismo: **especificar el
+artefacto sin especificar el contexto donde se consume.** v2 definía colores sin
+decir sobre qué fondo; v3 definía una zona de reposo sin medir la UI real; v4
+corrige ambas midiendo una captura del reproductor.
+
+Para la próxima: **cualquier regla de layout debe validarse contra una captura
+del reproductor de Shorts con la UI encima, no contra el mp4 abierto en un
+visor.** El mp4 se ve perfecto en los dos casos donde el video real falla.
