@@ -1,6 +1,6 @@
 {
   "channel": "why-shorts-en",
-  "updated": "2026-09-19",
+  "updated": "2026-09-20",
   "ideas": [
     {
       "id": "why-0003",
@@ -24,7 +24,17 @@
         "series": [
           {
             "name": "correlation",
-            "values": [0.79, 0.75, 0.66, 0.55, 0.42, 0.3, 0.18, 0.08, 0.03],
+            "values": [
+              0.79,
+              0.75,
+              0.66,
+              0.55,
+              0.42,
+              0.3,
+              0.18,
+              0.08,
+              0.03
+            ],
             "color": "amber",
             "highlight_index": 0
           }
@@ -38,10 +48,16 @@
         "silhouette couple ocean",
         "back view people dusk"
       ],
-      "scores": { "demand": 4, "evidence": 5, "counterintuition": 5, "chartability": 5 },
+      "scores": {
+        "demand": 4,
+        "evidence": 5,
+        "counterintuition": 5,
+        "chartability": 5
+      },
       "replication_check": "2023 study, post-crisis, n=79k UK Biobank — passes",
-      "status": "ready",
-      "publish_date": "2026-09-20"
+      "status": "published",
+      "publish_date": "2026-09-20",
+      "video_url": null
     },
     {
       "id": "why-0007",
@@ -67,11 +83,35 @@
       ],
       "chart_spec": {
         "type": "line",
-        "caption": "perceived speed of time \u00b7 n = 1,865",
-        "x_label": "age 20 \u2192 80",
+        "caption": "perceived speed of time · n = 1,865",
+        "x_label": "age 20 → 80",
         "series": [
-          { "name": "last 10 years", "values": [44, 55, 66, 78, 86, 88, 88], "color": "punch" },
-          { "name": "week / month / year", "values": [72, 71, 73, 72, 71, 72, 73], "color": "mute" }
+          {
+            "name": "last 10 years",
+            "values": [
+              44,
+              55,
+              66,
+              78,
+              86,
+              88,
+              88
+            ],
+            "color": "punch"
+          },
+          {
+            "name": "week / month / year",
+            "values": [
+              72,
+              71,
+              73,
+              72,
+              71,
+              72,
+              73
+            ],
+            "color": "mute"
+          }
         ],
         "note": "only the decade moves"
       },
@@ -82,10 +122,88 @@
         "watchmaker repairing clocks",
         "traffic light trails night"
       ],
-      "scores": { "demand": 5, "evidence": 4, "counterintuition": 5, "chartability": 4 },
+      "scores": {
+        "demand": 5,
+        "evidence": 4,
+        "counterintuition": 5,
+        "chartability": 4
+      },
       "replication_check": "2010 + 2013 large-n survey studies, cross-cultural replication (NL, NZ, JP) — passes",
       "status": "ready",
       "publish_date": "2026-09-21"
+    },
+    {
+      "id": "why-0009",
+      "slug": "bystander-effect-real",
+      "question_en": "Does the bystander effect actually exist?",
+      "lead_source": "Philpot et al., American Psychologist, 2020 — 219 CCTV conflicts",
+      "topic": "bystander",
+      "status": "draft",
+      "note": "Fuente ancla identificada, NO verificada. La rutina debe pasar el GATE de la sección 3 (fuente, replicación, graficabilidad, contraintuición, temperatura política) y completar myth/verdict/chart_spec/stimulus_queries antes de promover a 'ready'."
+    },
+    {
+      "id": "why-0010",
+      "slug": "false-news-spreads-faster",
+      "question_en": "Why do lies spread faster than the truth?",
+      "lead_source": "Vosoughi, Roy & Aral, Science, 2018 — 126,000 cascades",
+      "topic": "misinformation",
+      "status": "draft",
+      "note": "Fuente ancla identificada, NO verificada. La rutina debe pasar el GATE de la sección 3 (fuente, replicación, graficabilidad, contraintuición, temperatura política) y completar myth/verdict/chart_spec/stimulus_queries antes de promover a 'ready'."
+    },
+    {
+      "id": "why-0021",
+      "slug": "above-average-driver",
+      "question_en": "Why does everyone think they drive better than average?",
+      "lead_source": "Svenson, Acta Psychologica, 1981; later replications",
+      "topic": "self-assessment",
+      "status": "draft",
+      "note": "Fuente ancla identificada, NO verificada. La rutina debe pasar el GATE de la sección 3 (fuente, replicación, graficabilidad, contraintuición, temperatura política) y completar myth/verdict/chart_spec/stimulus_queries antes de promover a 'ready'."
+    },
+    {
+      "id": "why-0016",
+      "slug": "smart-people-conspiracies",
+      "question_en": "Why do intelligent people believe conspiracy theories?",
+      "lead_source": "Douglas et al., Annual Review of Psychology, 2019",
+      "topic": "conspiracy",
+      "status": "draft",
+      "note": "Fuente ancla identificada, NO verificada. La rutina debe pasar el GATE de la sección 3 (fuente, replicación, graficabilidad, contraintuición, temperatura política) y completar myth/verdict/chart_spec/stimulus_queries antes de promover a 'ready'."
+    },
+    {
+      "id": "why-0013",
+      "slug": "siblings-turn-out-different",
+      "question_en": "Why do siblings raised the same turn out so different?",
+      "lead_source": "Plomin — non-shared environment estimates",
+      "topic": "behavioural genetics",
+      "status": "draft",
+      "note": "Fuente ancla identificada, NO verificada. La rutina debe pasar el GATE de la sección 3 (fuente, replicación, graficabilidad, contraintuición, temperatura política) y completar myth/verdict/chart_spec/stimulus_queries antes de promover a 'ready'."
+    },
+    {
+      "id": "why-0005",
+      "slug": "cringe-memories-at-night",
+      "question_en": "Why do you still remember that embarrassing moment?",
+      "lead_source": "Berntsen — involuntary autobiographical memory",
+      "topic": "memory",
+      "status": "draft",
+      "note": "Fuente ancla identificada, NO verificada. La rutina debe pasar el GATE de la sección 3 (fuente, replicación, graficabilidad, contraintuición, temperatura política) y completar myth/verdict/chart_spec/stimulus_queries antes de promover a 'ready'."
+    },
+    {
+      "id": "why-0004",
+      "slug": "procrastinate-what-you-love",
+      "question_en": "Why do you procrastinate the things you actually want to do?",
+      "lead_source": "Steel, Psychological Bulletin, 2007 — meta-analysis",
+      "topic": "motivation",
+      "status": "draft",
+      "note": "Fuente ancla identificada, NO verificada. La rutina debe pasar el GATE de la sección 3 (fuente, replicación, graficabilidad, contraintuición, temperatura política) y completar myth/verdict/chart_spec/stimulus_queries antes de promover a 'ready'."
+    },
+    {
+      "id": "why-0001",
+      "slug": "yawn-contagion",
+      "question_en": "Why do you yawn when someone else yawns?",
+      "lead_source": "Massen & Gallup, Neurosci Biobehav Rev, 2017",
+      "topic": "empathy",
+      "status": "draft",
+      "note": "Fuente ancla identificada, NO verificada. La rutina debe pasar el GATE de la sección 3 (fuente, replicación, graficabilidad, contraintuición, temperatura política) y completar myth/verdict/chart_spec/stimulus_queries antes de promover a 'ready'."
     }
-  ]
+  ],
+  "policy": "Una idea por día. 'ready' = pasó el gate y tiene chart_spec + fuentes. 'draft' = candidata con fuente ancla, pendiente de verificar. 'published' = ya salió; el historial es la fuente de verdad."
 }
