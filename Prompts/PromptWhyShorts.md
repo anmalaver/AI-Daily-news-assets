@@ -615,10 +615,13 @@ ZONE_B = (82, 880, 860, 1400)    # apoyo, caption, cita
 # y > 1400: prohibido
 ```
 
-**Identificador `why · #NNN`**: arriba a la derecha, dentro de la zona segura
-superior pero **por debajo de y=200** — en la captura quedó pisado por la hora
-y la batería del teléfono. Mejor: muévelo al pie de la zona B, alineado a la
-izquierda, mono 26px. Ahí nada lo tapa.
+**Identificador `why · #NNN`**: al **pie de la zona B**, alineado a la izquierda,
+en `(82, 1340)`, mono 26px. Nada lo tapa ahí.
+
+**No va arriba a la derecha.** Ese era su sitio hasta la v3 y quedaba pisado por
+la hora, la señal y la batería del teléfono — visible en la captura de la
+corrida `why_003`. La esquina superior derecha del canvas es de la UI del
+sistema operativo, no del video.
 
 `NNN` sale del `id` de la idea (`why-0003` → `003`) y es **constante en los seis
 frames**.
@@ -1154,6 +1157,10 @@ for n in range(1, 7):
     rail = ov.crop((860, 880, 1080, 1400)).getchannel("A")
     if rail.getextrema()[1] > 0:
         fails.append(f"act {n}: texto bajo el riel de botones (x>860, y 880-1400)")
+    # esquina superior derecha: hora, señal y batería del teléfono
+    sysui = ov.crop((700, 0, 1080, 260)).getchannel("A")
+    if sysui.getextrema()[1] > 0:
+        fails.append(f"act {n}: texto en la esquina de la UI del sistema (x>700, y<260)")
 
 # 11. Medida de línea — ninguna línea supera su máximo de caracteres
 for n, lines in RENDERED_LINES.items():          # dict acto -> {rol: [str, ...]}
