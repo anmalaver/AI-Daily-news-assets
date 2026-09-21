@@ -476,6 +476,12 @@ leído en voz alta; lejos de "¡dato curioso!".
 Prohibido: signos de admiración, "increíble", "te va a volar la cabeza",
 "la ciencia dice", "los científicos descubrieron que" (di qué estudio).
 
+**También prohibido el extremo opuesto.** Leer el paper en voz alta no es tono
+editorial, es tono académico, y aburre igual. "Researchers found a correlation
+of point seven nine across a sample of seventy-nine thousand" no lo dice nadie.
+"Out of 79,000 couples, the closest match was age — almost always the same" sí.
+La narración sigue las mismas reglas de 6.6.1 que el texto en pantalla.
+
 ---
 
 ## 5. Imágenes (Pexels)
@@ -615,21 +621,13 @@ ZONE_B = (82, 880, 860, 1400)    # apoyo, caption, cita
 # y > 1400: prohibido
 ```
 
-**Identificador `why · #NNN`**: al **pie de la zona B**, alineado a la izquierda,
-en `(82, 1340)`, mono 26px. Nada lo tapa ahí.
+**Sin identificador en pantalla.** Las versiones anteriores imprimían
+`why · #NNN` en algún lugar del frame. No aporta: el espectador no necesita el
+número de episodio, no lo busca y no lo recuerda. El canal se reconoce por la
+tipografía y la paleta, no por una etiqueta. Eliminado.
 
-**No va arriba a la derecha.** Ese era su sitio hasta la v3 y quedaba pisado por
-la hora, la señal y la batería del teléfono — visible en la captura de la
-corrida `why_003`. La esquina superior derecha del canvas es de la UI del
-sistema operativo, no del video.
-
-`NNN` sale del `id` de la idea (`why-0003` → `003`) y es **constante en los seis
-frames**.
-
-```python
-IDEA_NUM = idea["id"].split("-")[-1]
-BADGE = f"why · #{IDEA_NUM[-3:]}"      # igual en los 6 frames
-```
+El `id` de la idea se sigue usando internamente — nombre de archivo, historial,
+cola — pero **nunca se dibuja**.
 
 **Zona de reposo.** Con foto, el scrim adaptativo (6.3.2) ya cubre y>1400. **No
 apliques degradado adicional sobre foto** — produce la franja gris con borde
@@ -914,16 +912,69 @@ Reglas del gráfico:
 central y dejó ~350px muertos arriba y ~300px abajo. Composición del frame de
 papel, de arriba a abajo dentro de la zona de acción (y 280→1500):
 
+El `caption` y la cita siguen la tabla de lenguaje de 6.6.1 — frase humana, no
+etiqueta de eje.
+
 | Elemento | Altura aprox. |
 |---|---|
 | Statement (la cifra que rompe el mito), Fraunces Bold | 200px |
 | Gráfico | 620px |
 | `caption` bajo el gráfico, mono 34px | 60px |
 | Línea de apoyo, Fraunces italic 44px | 120px |
-| Cita académica, mono 30px, 2-3 líneas | 130px |
+| Cita en pantalla (revista + año), mono 30px, 1 línea | 50px |
 
 Suma ≈1130px de 1220 disponibles: 93% de llenado. Si sobra más de 150px, sube
 el alto del gráfico hasta consumirlo.
+
+### 6.6.1. Cómo se dicen los números en pantalla
+
+**Regla:** el rigor vive en la descripción del video; en pantalla van los números
+en el idioma en que los diría una persona.
+
+En `why_003` el frame del dato decía `partner correlation across 133 traits ·
+n=79,074` y al pie `Horwitz et al. 2023 · Nat Hum Behav · n=79,074`. Eso es
+lenguaje de paper: correcto, verificable, y completamente frío. El espectador no
+llegó buscando una revisión de literatura — llegó porque se preguntó algo.
+
+**Tabla de traducción obligatoria:**
+
+| Lenguaje de paper | En pantalla |
+|---|---|
+| `n = 79,074` | `79,000 couples` |
+| `n = 1,865` | `1,865 people, aged 16 to 80` |
+| `partner correlation across 133 traits` | `How alike are couples, really?` |
+| `perceived speed of time · n=1,865` | `How fast a year feels, by age` |
+| `r = 0.79` | `.79` con la etiqueta `almost always the same` |
+| `Horwitz et al. 2023 · Nat Hum Behav` | `Nature, 2023` |
+| `Friedman & Janssen, Acta Psychologica, 2010` | `Acta Psychologica, 2010` |
+| `doi:10.1038/s41562-023-01672-z` | *(no va en pantalla — va en la descripción)* |
+| `meta-analysis of 22 traits` | `22 things they measured` |
+| `statistically significant` | *(nunca; di qué pasó)* |
+
+Reglas concretas:
+
+1. **El caption del gráfico es una frase, no una etiqueta de eje.** Preferible
+   una pregunta o una afirmación corta: `How alike are couples, really?` en vez
+   de `partner correlation across 133 traits`.
+2. **La n se redondea y se le pone unidad humana.** `79,000 couples`, no
+   `n=79,074`. La cifra exacta va en la descripción.
+3. **La cita en pantalla es revista + año.** Dos elementos, nada más. Sin
+   apellidos, sin "et al.", sin volumen, sin páginas, sin DOI. La cita completa
+   con DOI va en la descripción del video, que es donde alguien que quiera
+   verificar la va a buscar.
+4. **Las etiquetas del eje X son palabras comunes.** `age`, `faith`, `school`,
+   `mood` funcionan. `educational attainment`, `religiosity index` no.
+5. **Nada de jerga estadística en pantalla:** `r`, `p<0.05`, `correlation
+   coefficient`, `effect size`, `confidence interval`, `standard deviation`,
+   `statistically significant`. Si el punto depende de uno de esos conceptos,
+   explícalo con palabras en la línea de apoyo.
+6. **Los decimales se escriben sin el cero inicial cuando son correlaciones:**
+   `.79`, no `0.79`. Ocupa menos y lee más como titular.
+
+**Esto no relaja el GATE de evidencia.** La fuente sigue teniendo que ser un
+meta-análisis o un estudio con n≥500 verificado en primaria, y la cita completa
+con DOI sigue siendo obligatoria en la descripción. Lo que cambia es **dónde**
+vive cada nivel de detalle: la pantalla persuade, la descripción prueba.
 
 ### 6.7. Prohibiciones visuales
 
@@ -932,6 +983,9 @@ el alto del gráfico hasta consumirlo.
 - **Bandas o barras sólidas de color.** No hay franja inferior, ni cabecera, ni
   bloques de color detrás del texto. El scrim es degradado, nunca un borde duro.
 - Texto por debajo de y=1400, o a la derecha de x=860 entre y 880 y 1400.
+- Identificador de episodio, número de video o etiqueta de canal en el frame.
+- Jerga estadística en pantalla (`n=`, `r=`, `p<`, `et al.`, DOI, volumen de
+  revista). Ver 6.6.1.
 - Bajar el tamaño de fuente para que quepa el texto. Se acorta la línea, no la letra.
 - **Etiquetas de acto** ("the question", "the data"). Eliminadas en v3.
 - **Fondo de papel fuera del acto 3.** Si no hay gráfico, hay foto a sangre.
@@ -1132,11 +1186,6 @@ for n in range(1, 7):
         fill = (rows[-1] - rows[0]) / alpha.height
         if not 0.70 <= fill <= 0.90:
             fails.append(f"act {n}: vertical fill {fill:.0%} outside 70-90%")
-
-# 8. El badge es idéntico en los seis frames (bug de la v2: usaba el nº de acto)
-badges = {badge_text(n) for n in range(1, 7)}
-if len(badges) != 1:
-    fails.append(f"badge differs across acts: {sorted(badges)} — debe ser el id de la idea")
 
 # 9. Solo el acto 3 tiene fondo de papel
 for n in range(1, 7):
@@ -1703,3 +1752,31 @@ darlas por buenas porque estén en el archivo.
 **Se creó `why-history.json`**, que no existía. Sin él, el cruce de 2.2.1 no
 tenía contra qué comparar y la primera idea publicada se habría reproducido
 entera al día siguiente.
+
+### v6 (2026-09-20) — menos paper, más video
+
+**1. Identificador eliminado.** `why · #NNN` desapareció del frame. No lo
+buscaba nadie, no lo recordaba nadie, y ocupaba espacio en zonas que ya están
+apretadas. El canal se reconoce por tipografía y paleta. El `id` se sigue usando
+internamente (archivo, cola, historial) pero nunca se dibuja.
+
+**2. El frame del dato hablaba como un paper.** `partner correlation across 133
+traits · n=79,074` y `Horwitz et al. 2023 · Nat Hum Behav · n=79,074` son
+correctos y verificables, y completamente fríos. El espectador no llegó buscando
+una revisión de literatura.
+
+Nueva sección 6.6.1 con tabla de traducción obligatoria: `n=79,074` →
+`79,000 couples`; `partner correlation across 133 traits` → `How alike are
+couples, really?`; `Horwitz et al. 2023 · Nat Hum Behav` → `Nature, 2023`.
+Prohibida la jerga estadística en pantalla (`r`, `p<`, `et al.`, DOI, volumen).
+Etiquetas de eje en palabras comunes.
+
+**La regla que ordena todo esto: la pantalla persuade, la descripción prueba.**
+El GATE de evidencia no se relaja en nada — la fuente sigue siendo un
+meta-análisis o n≥500 verificado en primaria, y la cita completa con DOI sigue
+siendo obligatoria. Lo que cambia es dónde vive cada nivel de detalle.
+
+**3. La narración tenía el mismo problema.** El tono editorial estaba bien
+definido contra el extremo sensacionalista ("increíble", "te va a volar la
+cabeza") pero no contra el académico. Leer el paper en voz alta aburre igual.
+Añadida la regla inversa: la narración sigue la misma tabla 6.6.1.
