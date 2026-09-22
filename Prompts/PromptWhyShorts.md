@@ -48,8 +48,17 @@ fonts/IBMPlexMono-Regular.ttf
 
 **Python:** `pillow`, `matplotlib` (`pip install --break-system-packages`).
 
-**`.env`:** `PEXELS_API_KEY`, credenciales de YouTube (`YT_CLIENT_ID`,
-`YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`), `GITHUB_TOKEN` (historial).
+**`.env`:** `PEXELS_API_KEY`, `GITHUB_TOKEN` (historial), y YouTube:
+
+| Variable | Qué es |
+|---|---|
+| `YT_CLIENT_ID` | Compartido con el canal de AI (identifica la app) |
+| `YT_CLIENT_SECRET` | Compartido con el canal de AI |
+| **`YT_WHY_REFRESH_TOKEN`** | **Del canal Why.** Es el que decide a qué canal se sube |
+| `YT_WHY_CHANNEL_ID` | ID del canal Why (`UC...`), para verificar antes de subir |
+
+**Este formato nunca usa `YT_REFRESH_TOKEN`.** Ese es el token del canal de AI
+Daily News. Si lo usas, el video sale en el canal equivocado.
 Opcionales: `TEMA_FIJO`, `CREATE_THUMBNAIL`.
 
 **Sin paleta rotativa.** A diferencia del noticiero y el deep dive, este canal
@@ -1290,7 +1299,7 @@ más que en un formato de feed.
 
 ### 11.1. Requisito de scope
 
-El `YT_REFRESH_TOKEN` necesita `https://www.googleapis.com/auth/youtube.force-ssl`
+El `YT_WHY_REFRESH_TOKEN` necesita `https://www.googleapis.com/auth/youtube.force-ssl`
 además de `youtube.upload`. Sin ese scope, `captions().insert` falla con
 `insufficientPermissions`. Si falta, sáltate la sección y avísalo en la entrega
 — no abortes el video por esto.
@@ -1341,69 +1350,110 @@ retención es trabajo sin señal.
 
 ## 12. Subida
 
-### 12.1. Modo piloto (actual)
+### 12.1. Destino: canal Why, y solo el canal Why
 
-Mientras el canal "Why" no exista como canal propio, **los videos se suben al
-canal de AI Daily News** con las mismas credenciales del `.env`
-(`YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`), y **quedan privados
-de forma permanente** — sin `publishAt`, sin programación.
+Los videos se suben **al canal Why** con `YT_WHY_REFRESH_TOKEN`. No hay otro
+destino ni fallback.
 
-Esto es deliberado: el objetivo del piloto es validar render, tono y ritmo sin
-contaminar el feed ni el historial de recomendaciones de un canal que ya tiene
-audiencia de otro nicho. Un video de psicología publicado en un canal de noticias
-de IA le enseña algoritmos equivocados a ambos.
+**Si `YT_WHY_REFRESH_TOKEN` no existe, no subas.** No caigas a `YT_REFRESH_TOKEN`
+"para no perder el día": ese token es del canal de AI Daily News, y un video de
+psicología ahí contamina el historial de recomendaciones de los dos nichos. Deja
+el mp4 y reporta que falta la variable.
 
 ```python
-body = {
-    "snippet": {
-        "title": meta["titulo_video"],
-        "description": meta["descripcion"],
-        "tags": meta["tags"],
-        "categoryId": "27",            # Education
-    },
-    "status": {
-        "privacyStatus": "private",    # permanente, NO temporal
-        "selfDeclaredMadeForKids": False,
-        "containsSyntheticMedia": False,
-    },
-}
-resp = yt.videos().insert(
-    part="snippet,status", body=body,
+import os, sys
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+
+if not os.environ.get("YT_WHY_REFRESH_TOKEN"):
+    print("UPLOAD=SKIPPED — falta YT_WHY_REFRESH_TOKEN. No se usa el token del canal de AI.")
+    sys.exit(0)
+
+creds = Credentials(
+    None,
+    refresh_token=os.environ["YT_WHY_REFRESH_TOKEN"],   # canal Why
+    client_id=os.environ["YT_CLIENT_ID"],                # compartido
+    client_secret=os.environ["YT_CLIENT_SECRET"],        # compartido
+    token_uri="https://oauth2.googleapis.com/token",
+)
+yt = build("youtube", "v3", credentials=creds)
+```
+
+### 12.2. GATE de identidad — antes de subir
+
+El refresh token decide el canal, y es fácil emitirlo con la cuenta equivocada
+en el selector de Google: el error solo se descubre cuando el video ya salió
+donde no era. **Verifica el canal antes de cada subida y aborta si no coincide.**
+
+```python
+"""Identity gate: confirm the token belongs to the Why channel."""
+me = yt.channels().list(part="snippet", mine=True).execute()
+got_id = me["items"][0]["id"]
+got_title = me["items"][0]["snippet"]["title"]
+expected = os.environ.get("YT_WHY_CHANNEL_ID")
+
+print(f"CANAL_TOKEN={got_title} ({got_id})")
+if not expected:
+    print("IDENTITY_GATE=FAILED — falta YT_WHY_CHANNEL_ID, no se puede verificar")
+    sys.exit(1)
+if got_id != expected:
+    print(f"IDENTITY_GATE=FAILED — el token es de '{got_title}', no del canal Why")
+    sys.exit(1)
+print("IDENTITY_GATE=OK")
+```
+
+Si el gate falla, **no subas**. Entrega el mp4 y reporta el canal que devolvió
+el token. Casi siempre significa que el refresh token se emitió eligiendo la
+cuenta principal o el canal de AI en el selector de Google, y hay que regenerarlo.
+
+### 12.3. Visibilidad
+
+Controlada por `WHY_PUBLISH_MODE`:
+
+| Valor | Resultado |
+|---|---|
+| `private` *(default)* | Privado permanente. Sin `publishAt`. Para validar |
+| `scheduled` | Privado + `publishAt` 7:00am Nueva York. Se hace público solo |
+
+```python
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
+from googleapiclient.http import MediaFileUpload
+
+mode = os.environ.get("WHY_PUBLISH_MODE", "private")
+status = {"privacyStatus": "private",
+          "selfDeclaredMadeForKids": False,
+          "containsSyntheticMedia": False}
+
+if mode == "scheduled":
+    NY = ZoneInfo("America/New_York")
+    now = datetime.now(NY)
+    target = now.replace(hour=7, minute=0, second=0, microsecond=0)
+    if target <= now:
+        target += timedelta(days=1)
+    status["publishAt"] = target.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+body = {"snippet": {"title": meta["titulo_video"], "description": meta["descripcion"],
+                    "tags": meta["tags"], "categoryId": "27"},   # Education
+        "status": status}
+resp = yt.videos().insert(part="snippet,status", body=body,
     media_body=MediaFileUpload(os.environ["NOMBRE"], resumable=True)).execute()
 vid = resp["id"]
 print(f"VIDEO_URL=https://www.youtube.com/watch?v={vid}")
 print(f"STUDIO_URL=https://studio.youtube.com/video/{vid}/edit")
-print("MODO=piloto privado en canal AI Daily News")
+print(f"MODO={mode}  CANAL={got_title}")
 ```
 
-**No pases `publishAt` en modo piloto.** Si lo pasas, YouTube programa la
-publicación y el video se hace público solo — exactamente lo que no queremos.
+**En modo `private` no pases `publishAt`.** Si lo pasas, YouTube programa la
+publicación y el video se hace público solo.
 
 `containsSyntheticMedia: False` — voz sintética sobre stock real no requiere
 divulgación; no hay material realista alterado.
 
-### 12.2. Modo canal propio (cuando exista)
-
-Cuando el canal "Why" tenga sus propias credenciales, cambia dos cosas y nada más:
-
-- `privacyStatus: "private"` + `publishAt` a las **7:00am hora de Nueva York**.
-  El público de este formato consume en el commute matinal, no de madrugada.
-- Variables de entorno `YT_WHY_CLIENT_ID` / `YT_WHY_CLIENT_SECRET` /
-  `YT_WHY_REFRESH_TOKEN` en lugar de las genéricas.
-
-```python
-NY = ZoneInfo("America/New_York")
-ahora = datetime.now(NY)
-objetivo = ahora.replace(hour=7, minute=0, second=0, microsecond=0)
-if objetivo <= ahora:
-    objetivo += timedelta(days=1)
-publish_at = objetivo.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-```
-
-### 12.3. Captions
+### 12.4. Captions
 
 Sube los tres tracks con `captions().insert` (ver sección 11). **Funcionan
-igual en modo piloto:** un video privado acepta captions, y así se valida el
+igual en modo private:** un video privado acepta captions, y así se valida el
 pipeline completo antes de tener canal propio.
 
 ---
@@ -1443,7 +1493,7 @@ Marca la idea usada como `"status": "published"` y añade `"video_url"`.
 
 ### 13.3. Si algo falla
 
-**No bajes el video.** Ya está subido y en modo piloto está privado, así que no
+**No bajes el video.** Ya está subido y en modo private no es visible, así que no
 hay urgencia. Reporta en la entrega:
 
 - Cuál de los dos pushes falló y con qué error.
@@ -1458,7 +1508,8 @@ ese falla, dilo de forma destacada en la entrega.
 
 ## 14. Entrega
 
-1. **La URL del video** al principio, y la de Studio.
+1. **La URL del video** al principio, la de Studio, y **el canal al que se subió**
+   (`CANAL_TOKEN` del gate de identidad) y el modo (`private` / `scheduled`).
 2. El mp4 y el `manifiesto.json`.
 3. **Los cuatro cortes del GATE de evidencia** con su veredicto — es lo que
    permite auditar que el canal no está publicando pop-psychology.
@@ -1487,6 +1538,10 @@ ese falla, dilo de forma destacada en la entrega.
 - Duotono sale gris → el midtone no se aplicó. Revisa antes de seguir.
 - Duración fuera de 68-85s → ajusta actos 3 y 4, nunca el 1 o el 5.
 - Fuente no verificable en fuente primaria → no la uses.
+- Falta `YT_WHY_REFRESH_TOKEN` → no subas, **no uses `YT_REFRESH_TOKEN`**. Deja el
+  mp4 y repórtalo.
+- GATE de identidad falla → el token es de otro canal. No subas. Reporta qué canal
+  devolvió y que hay que regenerar el token eligiendo el canal Why.
 - Subida falla → reporta el error exacto y deja el mp4. `invalid_grant` significa
   token expirado: avísame.
 - Push de historial falla → el video ya está publicado, no lo bajes. Pega el JSON.
@@ -1531,7 +1586,8 @@ Para quien venga del otro prompt y asuma continuidad:
 | Voz rate | +13% | **+8%** |
 | Cama musical | −14dB | **−17dB** (mismas camas rotativas) |
 | Category ID | 28 (Sci & Tech) | **27 (Education)** |
-| Publicación | 4:00am NY | **7:00am NY** |
+| Canal destino | AI Daily News (`YT_REFRESH_TOKEN`) | **Why (`YT_WHY_REFRESH_TOKEN`)** |
+| Publicación | 4:00am NY | **privado por defecto; 7:00am NY con `scheduled`** |
 | Disparador | noticia del día | **cola pre-investigada** |
 | Gancho | novedad | **contraintuición** |
 | Vida útil | días | **años** |
@@ -1780,3 +1836,20 @@ siendo obligatoria. Lo que cambia es dónde vive cada nivel de detalle.
 definido contra el extremo sensacionalista ("increíble", "te va a volar la
 cabeza") pero no contra el académico. Leer el paper en voz alta aburre igual.
 Añadida la regla inversa: la narración sigue la misma tabla 6.6.1.
+
+### v7 (2026-09-20) — el canal Why es el único destino
+
+La sección 12 seguía marcando el canal de AI Daily News como modo "actual", y el
+setup solo listaba `YT_REFRESH_TOKEN` — el token de ese canal. Una corrida hoy
+habría subido al canal equivocado. Además 12.2 mencionaba `YT_WHY_CLIENT_ID` y
+`YT_WHY_CLIENT_SECRET`, que no existen: el client se comparte.
+
+- **Destino único: canal Why**, vía `YT_WHY_REFRESH_TOKEN`. El client
+  (`YT_CLIENT_ID` / `YT_CLIENT_SECRET`) se comparte con el canal de AI.
+- **Sin fallback.** Si falta `YT_WHY_REFRESH_TOKEN`, no se sube. Caer al token del
+  canal de AI "para no perder el día" contaminaría las recomendaciones de ambos.
+- **GATE de identidad (12.2).** Antes de subir, `channels.list(mine=True)` debe
+  devolver `YT_WHY_CHANNEL_ID`. Si no coincide, aborta. Atrapa el error más fácil
+  de cometer al emitir el token: elegir la cuenta equivocada en el selector.
+- **Visibilidad por variable:** `WHY_PUBLISH_MODE=private` (default) o
+  `scheduled` (7:00am NY).
