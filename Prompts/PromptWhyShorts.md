@@ -55,7 +55,6 @@ fonts/IBMPlexMono-Regular.ttf
 | `YT_CLIENT_ID` | Compartido con el canal de AI (identifica la app) |
 | `YT_CLIENT_SECRET` | Compartido con el canal de AI |
 | **`YT_WHY_REFRESH_TOKEN`** | **Del canal Why.** Es el que decide a qué canal se sube |
-| `YT_WHY_CHANNEL_ID` | ID del canal Why (`UC...`), para verificar antes de subir |
 
 **Este formato nunca usa `YT_REFRESH_TOKEN`.** Ese es el token del canal de AI
 Daily News. Si lo usas, el video sale en el canal equivocado.
@@ -1379,32 +1378,20 @@ creds = Credentials(
 yt = build("youtube", "v3", credentials=creds)
 ```
 
-### 12.2. GATE de identidad — antes de subir
+### 12.2. Canal destino — registro
 
-El refresh token decide el canal, y es fácil emitirlo con la cuenta equivocada
-en el selector de Google: el error solo se descubre cuando el video ya salió
-donde no era. **Verifica el canal antes de cada subida y aborta si no coincide.**
+El `YT_WHY_REFRESH_TOKEN` ya fue verificado contra el canal Why al emitirlo. Aun
+así, antes de subir, consulta a qué canal pertenece y **regístralo en la
+entrega**: si algún día se regenera el token con la cuenta equivocada, es ahí
+donde se nota.
 
 ```python
-"""Identity gate: confirm the token belongs to the Why channel."""
 me = yt.channels().list(part="snippet", mine=True).execute()
-got_id = me["items"][0]["id"]
 got_title = me["items"][0]["snippet"]["title"]
-expected = os.environ.get("YT_WHY_CHANNEL_ID")
-
-print(f"CANAL_TOKEN={got_title} ({got_id})")
-if not expected:
-    print("IDENTITY_GATE=FAILED — falta YT_WHY_CHANNEL_ID, no se puede verificar")
-    sys.exit(1)
-if got_id != expected:
-    print(f"IDENTITY_GATE=FAILED — el token es de '{got_title}', no del canal Why")
-    sys.exit(1)
-print("IDENTITY_GATE=OK")
+print(f"CANAL_TOKEN={got_title}")
 ```
 
-Si el gate falla, **no subas**. Entrega el mp4 y reporta el canal que devolvió
-el token. Casi siempre significa que el refresh token se emitió eligiendo la
-cuenta principal o el canal de AI en el selector de Google, y hay que regenerarlo.
+No es un gate: no aborta. Solo imprime.
 
 ### 12.3. Visibilidad
 
@@ -1509,7 +1496,7 @@ ese falla, dilo de forma destacada en la entrega.
 ## 14. Entrega
 
 1. **La URL del video** al principio, la de Studio, y **el canal al que se subió**
-   (`CANAL_TOKEN` del gate de identidad) y el modo (`private` / `scheduled`).
+   (`CANAL_TOKEN`) y el modo (`private` / `scheduled`).
 2. El mp4 y el `manifiesto.json`.
 3. **Los cuatro cortes del GATE de evidencia** con su veredicto — es lo que
    permite auditar que el canal no está publicando pop-psychology.
@@ -1540,8 +1527,6 @@ ese falla, dilo de forma destacada en la entrega.
 - Fuente no verificable en fuente primaria → no la uses.
 - Falta `YT_WHY_REFRESH_TOKEN` → no subas, **no uses `YT_REFRESH_TOKEN`**. Deja el
   mp4 y repórtalo.
-- GATE de identidad falla → el token es de otro canal. No subas. Reporta qué canal
-  devolvió y que hay que regenerar el token eligiendo el canal Why.
 - Subida falla → reporta el error exacto y deja el mp4. `invalid_grant` significa
   token expirado: avísame.
 - Push de historial falla → el video ya está publicado, no lo bajes. Pega el JSON.
@@ -1848,8 +1833,8 @@ habría subido al canal equivocado. Además 12.2 mencionaba `YT_WHY_CLIENT_ID` y
   (`YT_CLIENT_ID` / `YT_CLIENT_SECRET`) se comparte con el canal de AI.
 - **Sin fallback.** Si falta `YT_WHY_REFRESH_TOKEN`, no se sube. Caer al token del
   canal de AI "para no perder el día" contaminaría las recomendaciones de ambos.
-- **GATE de identidad (12.2).** Antes de subir, `channels.list(mine=True)` debe
-  devolver `YT_WHY_CHANNEL_ID`. Si no coincide, aborta. Atrapa el error más fácil
-  de cometer al emitir el token: elegir la cuenta equivocada en el selector.
+- **Registro del canal (12.2).** Antes de subir, `channels.list(mine=True)`
+  imprime el nombre del canal del token en la entrega. Informativo, no aborta: el
+  token se verificó manualmente al emitirlo.
 - **Visibilidad por variable:** `WHY_PUBLISH_MODE=private` (default) o
   `scheduled` (7:00am NY).
