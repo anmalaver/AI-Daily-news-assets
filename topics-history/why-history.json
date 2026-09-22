@@ -3,6 +3,15 @@
   "note": "Últimos 20 temas publicados. La rutina cruza por slug antes de aceptar una idea de la cola.",
   "topics": [
     {
+      "fecha": "2026-09-21",
+      "id": "why-0007",
+      "slug": "time-speeds-up-with-age",
+      "question": "Why does time speed up as you age?",
+      "verdict": "It's not your age. It's your calendar.",
+      "source_doi": "10.1016/j.actpsy.2010.01.004",
+      "video_url": null
+    },
+    {
       "fecha": "2026-09-20",
       "id": "why-0003",
       "slug": "do-opposites-attract",
@@ -11,6 +20,16 @@
       "source_doi": "10.1038/s41562-023-01672-z",
       "video_url": null,
       "nota": "Primera corrida real (why_003_20260920). Publicado privado en el canal de AI Daily News. URL pendiente de registrar."
+    },
+    {
+      "fecha": "2026-09-19",
+      "id": "why-0000",
+      "slug": "happiness-plateau-75k",
+      "question": "Why does happiness stop at $75k?",
+      "verdict": null,
+      "source_doi": null,
+      "video_url": null,
+      "nota": "why_live0919 — primera corrida, tema por minería en vivo."
     }
   ]
 }
