@@ -81,14 +81,52 @@ TEMA_FIJO="${TEMA_FIJO:-NONE}"
 - **Cualquier otro valor** → esa es la pregunta. Salta a verificación (sección 3).
   No cambies de tema aunque encuentres algo "mejor".
 
+### 2.2.0. Cómo leer archivos del repo — SIEMPRE por la API
+
+**No leas la cola ni el historial por `raw.githubusercontent.com`.** Es un CDN
+con caché de varios minutos: puede devolver una versión vieja del archivo justo
+después de un push. Pasó durante el diseño de este prompt — el CDN sirvió una
+cola desactualizada. Con el historial eso significa repetir un tema ya publicado
+sin que ningún check lo note, porque el cruce de 2.2.1 compara contra la misma
+copia vieja.
+
+Lee por la API de GitHub con `GITHUB_TOKEN`, que siempre devuelve la versión
+actual:
+
+```python
+"""Read a repo file fresh from the GitHub API (never from the raw CDN)."""
+import json, os, urllib.request, urllib.error
+
+def read_repo_json(path, default):
+    url = f"https://api.github.com/repos/anmalaver/AI-Daily-news-assets/contents/{path}?ref=main"
+    req = urllib.request.Request(url, headers={
+        "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
+        "Accept": "application/vnd.github.raw",
+        "User-Agent": "why-pipeline",
+    })
+    try:
+        return json.loads(urllib.request.urlopen(req).read())
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return default
+        raise
+
+queue   = read_repo_json("topics-history/why-queue.json",   {"ideas": []})
+history = read_repo_json("topics-history/why-history.json", {"topics": []})
+```
+
+Si la API falla por algo distinto a 404 (red, token), **aborta**: es preferible
+no correr hoy que correr con un historial que no sabes si está al día.
+
 ### 2.2. Flujo de cola
 
 La cola vive en el repo `anmalaver/AI-Daily-news-assets`, en
 `topics-history/why-queue.json`. **Es la fuente de verdad de qué se publica cada
 día** — la rutina no inventa preguntas mientras haya ideas `ready` en la cola.
 
-Descárgala con **dos métodos en orden**, porque `raw.githubusercontent.com` ha
-devuelto 404 para este repo:
+Léela con `read_repo_json` (sección 2.2.0). El bloque siguiente queda solo
+como **último recurso** si no hay `GITHUB_TOKEN`, sabiendo que puede devolver
+una versión en caché:
 
 ```bash
 # 1) intento directo
@@ -112,8 +150,8 @@ red, token o permisos — casos en los que el prompt te indica publicar igual y
 reportar. La consecuencia: una idea ya publicada sigue diciendo `ready` y mañana
 se produce otra vez, entera.
 
-Por eso, antes de aceptar una idea de la cola, descarga también el historial y
-compara por `slug`:
+Por eso, antes de aceptar una idea de la cola, lee también el historial con
+`read_repo_json` (2.2.0) y compara por `slug`. Último recurso sin token:
 
 ```bash
 curl -fsSL -o why-history.json \
@@ -1848,3 +1886,14 @@ habría subido al canal equivocado. Además 12.2 mencionaba `YT_WHY_CLIENT_ID` y
   token se verificó manualmente al emitirlo.
 - **Visibilidad por variable:** `WHY_PUBLISH_MODE=private` (default) o
   `scheduled` (7:00am NY).
+
+### v8 (2026-09-22) — lectura del repo por API, no por CDN
+
+`raw.githubusercontent.com` sirvió una versión en caché de `why-queue.json`
+minutos después de un push. La rutina leía cola e historial justo por ahí, así
+que podía elegir el tema del día con un historial viejo y repetir uno ya
+publicado.
+
+Nueva sección 2.2.0: lectura siempre por la API de GitHub con `GITHUB_TOKEN` y
+`Accept: application/vnd.github.raw`. Si la API falla por algo distinto a 404,
+la corrida aborta. raw/codeload quedan solo como último recurso sin token.
