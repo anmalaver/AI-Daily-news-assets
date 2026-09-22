@@ -1,21 +1,7 @@
 {
   "channel": "why-shorts-en",
-  "updated": "2026-09-20",
+  "updated": "2026-09-22",
   "ideas": [
-    {
-      "id": "why-0000",
-      "slug": "happiness-plateau-75k",
-      "question_en": "Why does happiness stop at $75k?",
-      "status": "published",
-      "video_url": null,
-      "note": "Primera corrida (why_live0919), tema por minería en vivo, nunca estuvo en cola. Registrado para que no se repita.",
-      "sources": [
-        {
-          "cite": "Killingsworth, Kahneman & Mellers, PNAS, 2023",
-          "n": 33391
-        }
-      ]
-    },
     {
       "id": "why-0003",
       "slug": "do-opposites-attract",
@@ -69,9 +55,200 @@
         "chartability": 5
       },
       "replication_check": "2023 study, post-crisis, n=79k UK Biobank — passes",
-      "status": "published",
-      "publish_date": "2026-09-20",
-      "video_url": null
+      "status": "ready",
+      "publish_date": "2026-09-22"
+    },
+    {
+      "id": "why-0009",
+      "slug": "bystander-effect-real",
+      "question_en": "Does the bystander effect actually exist?",
+      "hook": "You've heard nobody helps when there's a crowd. Cameras say otherwise.",
+      "myth": "The more people watching, the less likely anyone helps.",
+      "myth_attribution": "Kitty Genovese, 1964. Taught in every intro psych class since.",
+      "data_statement": "Nine out of ten times, someone stepped in.",
+      "mechanism": "Each person is less likely to act in a crowd, but a crowd has more people who might. The odds per person drop; the odds that someone helps go up.",
+      "verdict": "Crowds don't freeze. They just wait.",
+      "verdict_support": "The danger isn't that nobody helps. It's that everyone waits for someone else to go first.",
+      "takeaway": "Would you be the first to move?",
+      "sources": [
+        {
+          "cite": "Philpot, R., Liebst, L. S., Levine, M., Bernasco, W., & Lindegaard, M. R. (2020). Would I be helped? Cross-national CCTV footage shows that intervention is the norm in public conflicts. American Psychologist, 75(1), 66-75.",
+          "doi": "10.1037/amp0000469",
+          "n": 219,
+          "unit": "real conflicts on CCTV",
+          "year": 2020
+        },
+        {
+          "cite": "Fischer, P., et al. (2011). The bystander-effect: A meta-analytic review on bystander intervention in dangerous and non-dangerous emergencies. Psychological Bulletin, 137(4), 517-537.",
+          "doi": "10.1037/a0023304",
+          "n": 7700,
+          "unit": "participants, 105 effect sizes",
+          "year": 2011
+        }
+      ],
+      "on_screen_source": "American Psychologist, 2020",
+      "chart_spec": {
+        "type": "bar",
+        "caption": "Did anyone step in?",
+        "labels": [
+          "someone helped",
+          "nobody helped"
+        ],
+        "values": [
+          91,
+          9
+        ],
+        "unit": "%",
+        "highlight_index": 0,
+        "note": "219 real fights, filmed in 3 countries"
+      },
+      "stimulus_queries": [
+        "city street night crowd",
+        "people walking busy crosswalk",
+        "security camera street",
+        "hands reaching out help",
+        "crowd silhouette urban"
+      ],
+      "scores": {
+        "demand": 5,
+        "evidence": 5,
+        "counterintuition": 5,
+        "chartability": 5
+      },
+      "replication_check": "Pasa. El estudio CCTV tiene n=219 conflictos (<500), pero la tesis se ancla en el meta-análisis de Fischer 2011 (7,700 participantes, 105 efectos). Ambos coinciden: el efecto existe por persona, pero no impide que alguien ayude.",
+      "gate": {
+        "source": "pass",
+        "replication": "pass",
+        "chartable": "pass",
+        "counterintuitive": "pass",
+        "political": "pass"
+      },
+      "status": "ready",
+      "publish_date": "2026-09-23"
+    },
+    {
+      "id": "why-0010",
+      "slug": "false-news-spreads-faster",
+      "question_en": "Why do lies spread faster than the truth?",
+      "hook": "It's not the bots. 126,000 stories say it's us.",
+      "myth": "Fake news spreads because bots and trolls push it.",
+      "myth_attribution": "The default explanation after every viral hoax.",
+      "data_statement": "A lie reached 1,500 people six times faster.",
+      "mechanism": "False stories were more novel than true ones, and novelty is what makes us share. Bots spread true and false news at the same rate. The difference came from people.",
+      "verdict": "Lies win because they're new.",
+      "verdict_support": "The truth is usually something you've heard before. A lie almost never is.",
+      "takeaway": "What was the last thing you shared because it surprised you?",
+      "sources": [
+        {
+          "cite": "Vosoughi, S., Roy, D., & Aral, S. (2018). The spread of true and false news online. Science, 359(6380), 1146-1151.",
+          "doi": "10.1126/science.aap9559",
+          "n": 126000,
+          "unit": "stories, ~3M people, 2006-2017",
+          "year": 2018
+        }
+      ],
+      "on_screen_source": "Science, 2018",
+      "chart_spec": {
+        "type": "bar",
+        "caption": "How long to reach 1,500 people",
+        "labels": [
+          "a lie",
+          "the truth"
+        ],
+        "values": [
+          1,
+          6
+        ],
+        "unit": "x time",
+        "highlight_index": 1,
+        "note": "126,000 stories, 11 years of Twitter"
+      },
+      "stimulus_queries": [
+        "phone screen scrolling dark",
+        "people looking at phones subway",
+        "hands typing phone night",
+        "crowd with smartphones",
+        "newspaper stack"
+      ],
+      "scores": {
+        "demand": 5,
+        "evidence": 5,
+        "counterintuition": 4,
+        "chartability": 5
+      },
+      "replication_check": "Pasa. Estudio de escala enorme en Science, post-2015, sin controversia sobre el hallazgo central.",
+      "political_note": "El paper reporta que el efecto es más fuerte en noticias políticas. El video NO usa ejemplos políticos: el ángulo es novedad + personas vs bots. Si el guion deriva a política, falla el corte de temperatura.",
+      "gate": {
+        "source": "pass",
+        "replication": "pass",
+        "chartable": "pass",
+        "counterintuitive": "pass",
+        "political": "pass-with-constraint"
+      },
+      "status": "ready",
+      "publish_date": "2026-09-24"
+    },
+    {
+      "id": "why-0013",
+      "slug": "siblings-turn-out-different",
+      "question_en": "Why do siblings raised the same turn out so different?",
+      "hook": "Same parents, same house, same rules. Completely different people.",
+      "myth": "Kids turn out like the home they grew up in.",
+      "myth_attribution": "The assumption behind almost every parenting book.",
+      "data_statement": "Half is what you inherit.",
+      "mechanism": "Siblings share only about half their genes, and the rest comes from experiences each child lives alone: different friends, teachers, accidents. The shared home explains surprisingly little.",
+      "verdict": "You didn't grow up in the same house.",
+      "verdict_support": "Same address, different childhood. Each sibling lived a version nobody else saw.",
+      "takeaway": "What happened to you that your sibling never lived?",
+      "sources": [
+        {
+          "cite": "Polderman, T. J. C., Benyamin, B., de Leeuw, C. A., Sullivan, P. F., van Bochoven, A., Visscher, P. M., & Posthuma, D. (2015). Meta-analysis of the heritability of human traits based on fifty years of twin studies. Nature Genetics, 47(7), 702-709.",
+          "doi": "10.1038/ng.3285",
+          "n": 14558903,
+          "unit": "twin pairs, 17,804 traits",
+          "year": 2015
+        }
+      ],
+      "on_screen_source": "Nature Genetics, 2015",
+      "chart_spec": {
+        "type": "bar",
+        "caption": "What makes you, you",
+        "labels": [
+          "what you inherit",
+          "everything else"
+        ],
+        "values": [
+          49,
+          51
+        ],
+        "unit": "%",
+        "highlight_index": 1,
+        "support_fact": "In 69% of traits, sharing a home added nothing measurable.",
+        "note": "50 years of twin studies, 14.5 million pairs"
+      },
+      "stimulus_queries": [
+        "siblings walking back view",
+        "two children silhouette",
+        "family photo old vintage",
+        "brothers different directions",
+        "kids playing separately"
+      ],
+      "scores": {
+        "demand": 5,
+        "evidence": 5,
+        "counterintuition": 5,
+        "chartability": 4
+      },
+      "replication_check": "Pasa. Meta-análisis de 50 años de estudios de gemelos. 'Nada medible del hogar compartido' se afirma solo para el 69% de rasgos, como dice el paper — no generalizar.",
+      "gate": {
+        "source": "pass",
+        "replication": "pass",
+        "chartable": "pass",
+        "counterintuitive": "pass",
+        "political": "pass"
+      },
+      "status": "ready",
+      "publish_date": "2026-09-25"
     },
     {
       "id": "why-0007",
@@ -148,22 +325,20 @@
       "video_url": null
     },
     {
-      "id": "why-0009",
-      "slug": "bystander-effect-real",
-      "question_en": "Does the bystander effect actually exist?",
-      "lead_source": "Philpot et al., American Psychologist, 2020 — 219 CCTV conflicts",
-      "topic": "bystander",
+      "id": "why-0000",
+      "slug": "happiness-plateau-75k",
+      "question_en": "Why does happiness stop at $75k?",
       "status": "draft",
-      "note": "Fuente ancla identificada, NO verificada. La rutina debe pasar el GATE de la sección 3 (fuente, replicación, graficabilidad, contraintuición, temperatura política) y completar myth/verdict/chart_spec/stimulus_queries antes de promover a 'ready'."
-    },
-    {
-      "id": "why-0010",
-      "slug": "false-news-spreads-faster",
-      "question_en": "Why do lies spread faster than the truth?",
-      "lead_source": "Vosoughi, Roy & Aral, Science, 2018 — 126,000 cascades",
-      "topic": "misinformation",
-      "status": "draft",
-      "note": "Fuente ancla identificada, NO verificada. La rutina debe pasar el GATE de la sección 3 (fuente, replicación, graficabilidad, contraintuición, temperatura política) y completar myth/verdict/chart_spec/stimulus_queries antes de promover a 'ready'."
+      "note": "Video why_live0919 producido pero NO publicado. Fuente verificada; falta chart_spec con valores reales extraídos de la figura del paper antes de pasar a ready. No reutilizar las cifras del video anterior: no tienen procedencia registrada.",
+      "sources": [
+        {
+          "cite": "Killingsworth, M. A., Kahneman, D., & Mellers, B. (2023). Income and emotional well-being: A conflict resolved. PNAS, 120(10), e2208661120.",
+          "doi": "10.1073/pnas.2208661120",
+          "year": 2023
+        }
+      ],
+      "publish_date": null,
+      "replication_check": "Colaboración adversarial post-2015. CONTESTADO: comentarios posteriores en PNAS (Arslan 2024) y un reanálisis en arXiv discuten dónde está el umbral. Usar el acto 4 para decir que sigue en debate."
     },
     {
       "id": "why-0021",
@@ -180,15 +355,6 @@
       "question_en": "Why do intelligent people believe conspiracy theories?",
       "lead_source": "Douglas et al., Annual Review of Psychology, 2019",
       "topic": "conspiracy",
-      "status": "draft",
-      "note": "Fuente ancla identificada, NO verificada. La rutina debe pasar el GATE de la sección 3 (fuente, replicación, graficabilidad, contraintuición, temperatura política) y completar myth/verdict/chart_spec/stimulus_queries antes de promover a 'ready'."
-    },
-    {
-      "id": "why-0013",
-      "slug": "siblings-turn-out-different",
-      "question_en": "Why do siblings raised the same turn out so different?",
-      "lead_source": "Plomin — non-shared environment estimates",
-      "topic": "behavioural genetics",
       "status": "draft",
       "note": "Fuente ancla identificada, NO verificada. La rutina debe pasar el GATE de la sección 3 (fuente, replicación, graficabilidad, contraintuición, temperatura política) y completar myth/verdict/chart_spec/stimulus_queries antes de promover a 'ready'."
     },
