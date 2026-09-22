@@ -159,7 +159,17 @@ ambos, se salta — es preferible saltar un día que publicar un duplicado, porq
 el duplicado dispara la política de contenido inauténtico de YouTube y el daño
 es a nivel de canal, no de video.
 
-Si tras el filtro no queda ninguna candidata, salta a 2.3.
+Si tras el filtro no queda ninguna candidata `ready`:
+
+1. **Si hay `draft`** → promueve la primera draft **ahora mismo**, en esta
+   corrida, con el procedimiento completo de 2.2.3 (los cortes del gate, fuente
+   verificada en primaria, `chart_spec` con cifras reales). Si pasa, esa es la
+   idea de hoy. Si el gate la tumba, márcala `rejected` y prueba la siguiente
+   draft. No esperes al final de la corrida: sin idea no hay corrida.
+2. **Si no hay `draft`** → minería en vivo (2.3), en modo llenar-cola.
+
+Reporta en la entrega `QUEUE_START=empty-ready` y qué draft se promovió, para
+que se vea que la cola llegó vacía y hay que revisar la reposición.
 
 ---
 
