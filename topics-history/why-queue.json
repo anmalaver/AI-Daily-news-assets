@@ -3,6 +3,20 @@
   "updated": "2026-09-20",
   "ideas": [
     {
+      "id": "why-0000",
+      "slug": "happiness-plateau-75k",
+      "question_en": "Why does happiness stop at $75k?",
+      "status": "published",
+      "video_url": null,
+      "note": "Primera corrida (why_live0919), tema por minería en vivo, nunca estuvo en cola. Registrado para que no se repita.",
+      "sources": [
+        {
+          "cite": "Killingsworth, Kahneman & Mellers, PNAS, 2023",
+          "n": 33391
+        }
+      ]
+    },
+    {
       "id": "why-0003",
       "slug": "do-opposites-attract",
       "question_en": "Do opposites really attract?",
@@ -129,8 +143,9 @@
         "chartability": 4
       },
       "replication_check": "2010 + 2013 large-n survey studies, cross-cultural replication (NL, NZ, JP) — passes",
-      "status": "ready",
-      "publish_date": "2026-09-21"
+      "status": "published",
+      "publish_date": "2026-09-21",
+      "video_url": null
     },
     {
       "id": "why-0009",
