@@ -2,6 +2,14 @@
   "topics": [
     {
       "fecha": "2026-09-24",
+      "slug": "openai-gpt-6-sol-and-luna",
+      "titulo": "OpenAI ships GPT-6 Sol and Luna, halving prices",
+      "url": "https://venturebeat.com/technology/openai-releases-gpt-6-sol-and-luna-models-slashing-api-costs-50-or-more",
+      "marca_principal": "OpenAI",
+      "producto": "GPT-6 Sol and Luna"
+    },
+    {
+      "fecha": "2026-09-24",
       "slug": "anthropic-claude-opus-5-5",
       "titulo": "Anthropic ships Claude Opus 5.5",
       "url": "https://www.anthropic.com/claude-opus-5-5",
