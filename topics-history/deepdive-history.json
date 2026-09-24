@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "fecha": "2026-09-24",
+      "slug": "anthropic-claude-opus-5-5",
+      "titulo": "Anthropic ships Claude Opus 5.5",
+      "url": "https://www.anthropic.com/claude-opus-5-5",
+      "marca_principal": "Anthropic",
+      "producto": "Claude Opus 5.5"
+    },
+    {
       "fecha": "2026-09-18",
       "slug": "openai-claude-opus-5-monorepo-breach",
       "titulo": "White hats used Claude Opus 5 to breach OpenAI's monorepo",
