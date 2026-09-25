@@ -3,6 +3,15 @@
   "note": "Últimos 20 temas publicados. La rutina cruza por slug antes de aceptar una idea de la cola.",
   "topics": [
     {
+      "fecha": "2026-09-25",
+      "id": "why-0003",
+      "slug": "do-opposites-attract",
+      "question": "Do opposites really attract?",
+      "verdict": "You married your mirror.",
+      "source_doi": "10.1038/s41562-023-01672-z",
+      "video_url": "https://www.youtube.com/watch?v=GxrNbiZWAgs"
+    },
+    {
       "fecha": "2026-09-21",
       "id": "why-0007",
       "slug": "time-speeds-up-with-age",
