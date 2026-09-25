@@ -1,6 +1,6 @@
 {
   "channel": "why-shorts-en",
-  "updated": "2026-09-22",
+  "updated": "2026-09-25",
   "ideas": [
     {
       "id": "why-0003",
@@ -55,8 +55,9 @@
         "chartability": 5
       },
       "replication_check": "2023 study, post-crisis, n=79k UK Biobank — passes",
-      "status": "ready",
-      "publish_date": "2026-09-22"
+      "status": "published",
+      "publish_date": "2026-09-22",
+      "video_url": "https://www.youtube.com/watch?v=GxrNbiZWAgs"
     },
     {
       "id": "why-0009",
