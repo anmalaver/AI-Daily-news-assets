@@ -1,6 +1,14 @@
 {
   "topics": [
     {
+      "fecha": "2026-09-26",
+      "slug": "openai-anthropic-price-war",
+      "titulo": "OpenAI vs Anthropic price war: GPT-6 Sol at half of Claude Opus 5.5",
+      "url": "https://www.anthropic.com/news/claude-opus-5-5",
+      "marca_principal": "OpenAI Anthropic",
+      "producto": "price war"
+    },
+    {
       "fecha": "2026-09-24",
       "slug": "openai-gpt-6-sol-and-luna",
       "titulo": "OpenAI ships GPT-6 Sol and Luna, halving prices",
