@@ -1,6 +1,6 @@
 {
   "channel": "why-shorts-en",
-  "updated": "2026-09-25",
+  "updated": "2026-09-26",
   "ideas": [
     {
       "id": "why-0003",
@@ -24,36 +24,15 @@
         "series": [
           {
             "name": "correlation",
-            "values": [
-              0.79,
-              0.75,
-              0.66,
-              0.55,
-              0.42,
-              0.3,
-              0.18,
-              0.08,
-              0.03
-            ],
+            "values": [0.79, 0.75, 0.66, 0.55, 0.42, 0.3, 0.18, 0.08, 0.03],
             "color": "amber",
             "highlight_index": 0
           }
         ],
         "note": "none negative"
       },
-      "stimulus_queries": [
-        "couple silhouette sunset",
-        "two people walking hill dusk",
-        "couple lake twilight",
-        "silhouette couple ocean",
-        "back view people dusk"
-      ],
-      "scores": {
-        "demand": 4,
-        "evidence": 5,
-        "counterintuition": 5,
-        "chartability": 5
-      },
+      "stimulus_queries": ["couple silhouette sunset", "two people walking hill dusk", "couple lake twilight", "silhouette couple ocean", "back view people dusk"],
+      "scores": {"demand": 4, "evidence": 5, "counterintuition": 5, "chartability": 5},
       "replication_check": "2023 study, post-crisis, n=79k UK Biobank — passes",
       "status": "published",
       "publish_date": "2026-09-22",
@@ -91,41 +70,19 @@
       "chart_spec": {
         "type": "bar",
         "caption": "Did anyone step in?",
-        "labels": [
-          "someone helped",
-          "nobody helped"
-        ],
-        "values": [
-          91,
-          9
-        ],
+        "labels": ["someone helped", "nobody helped"],
+        "values": [91, 9],
         "unit": "%",
         "highlight_index": 0,
         "note": "219 real fights, filmed in 3 countries"
       },
-      "stimulus_queries": [
-        "city street night crowd",
-        "people walking busy crosswalk",
-        "security camera street",
-        "hands reaching out help",
-        "crowd silhouette urban"
-      ],
-      "scores": {
-        "demand": 5,
-        "evidence": 5,
-        "counterintuition": 5,
-        "chartability": 5
-      },
+      "stimulus_queries": ["city street night crowd", "people walking busy crosswalk", "security camera street", "hands reaching out help", "crowd silhouette urban"],
+      "scores": {"demand": 5, "evidence": 5, "counterintuition": 5, "chartability": 5},
       "replication_check": "Pasa. El estudio CCTV tiene n=219 conflictos (<500), pero la tesis se ancla en el meta-análisis de Fischer 2011 (7,700 participantes, 105 efectos). Ambos coinciden: el efecto existe por persona, pero no impide que alguien ayude.",
-      "gate": {
-        "source": "pass",
-        "replication": "pass",
-        "chartable": "pass",
-        "counterintuitive": "pass",
-        "political": "pass"
-      },
-      "status": "ready",
-      "publish_date": "2026-09-23"
+      "gate": {"source": "pass", "replication": "pass", "chartable": "pass", "counterintuitive": "pass", "political": "pass"},
+      "status": "published",
+      "publish_date": "2026-09-23",
+      "video_url": "https://www.youtube.com/watch?v=UOHC1PQKGRU"
     },
     {
       "id": "why-0010",
@@ -152,40 +109,17 @@
       "chart_spec": {
         "type": "bar",
         "caption": "How long to reach 1,500 people",
-        "labels": [
-          "a lie",
-          "the truth"
-        ],
-        "values": [
-          1,
-          6
-        ],
+        "labels": ["a lie", "the truth"],
+        "values": [1, 6],
         "unit": "x time",
         "highlight_index": 1,
         "note": "126,000 stories, 11 years of Twitter"
       },
-      "stimulus_queries": [
-        "phone screen scrolling dark",
-        "people looking at phones subway",
-        "hands typing phone night",
-        "crowd with smartphones",
-        "newspaper stack"
-      ],
-      "scores": {
-        "demand": 5,
-        "evidence": 5,
-        "counterintuition": 4,
-        "chartability": 5
-      },
+      "stimulus_queries": ["phone screen scrolling dark", "people looking at phones subway", "hands typing phone night", "crowd with smartphones", "newspaper stack"],
+      "scores": {"demand": 5, "evidence": 5, "counterintuition": 4, "chartability": 5},
       "replication_check": "Pasa. Estudio de escala enorme en Science, post-2015, sin controversia sobre el hallazgo central.",
       "political_note": "El paper reporta que el efecto es más fuerte en noticias políticas. El video NO usa ejemplos políticos: el ángulo es novedad + personas vs bots. Si el guion deriva a política, falla el corte de temperatura.",
-      "gate": {
-        "source": "pass",
-        "replication": "pass",
-        "chartable": "pass",
-        "counterintuitive": "pass",
-        "political": "pass-with-constraint"
-      },
+      "gate": {"source": "pass", "replication": "pass", "chartable": "pass", "counterintuitive": "pass", "political": "pass-with-constraint"},
       "status": "ready",
       "publish_date": "2026-09-24"
     },
@@ -214,40 +148,17 @@
       "chart_spec": {
         "type": "bar",
         "caption": "What makes you, you",
-        "labels": [
-          "what you inherit",
-          "everything else"
-        ],
-        "values": [
-          49,
-          51
-        ],
+        "labels": ["what you inherit", "everything else"],
+        "values": [49, 51],
         "unit": "%",
         "highlight_index": 1,
         "support_fact": "In 69% of traits, sharing a home added nothing measurable.",
         "note": "50 years of twin studies, 14.5 million pairs"
       },
-      "stimulus_queries": [
-        "siblings walking back view",
-        "two children silhouette",
-        "family photo old vintage",
-        "brothers different directions",
-        "kids playing separately"
-      ],
-      "scores": {
-        "demand": 5,
-        "evidence": 5,
-        "counterintuition": 5,
-        "chartability": 4
-      },
+      "stimulus_queries": ["siblings walking back view", "two children silhouette", "family photo old vintage", "brothers different directions", "kids playing separately"],
+      "scores": {"demand": 5, "evidence": 5, "counterintuition": 5, "chartability": 4},
       "replication_check": "Pasa. Meta-análisis de 50 años de estudios de gemelos. 'Nada medible del hogar compartido' se afirma solo para el 69% de rasgos, como dice el paper — no generalizar.",
-      "gate": {
-        "source": "pass",
-        "replication": "pass",
-        "chartable": "pass",
-        "counterintuitive": "pass",
-        "political": "pass"
-      },
+      "gate": {"source": "pass", "replication": "pass", "chartable": "pass", "counterintuitive": "pass", "political": "pass"},
       "status": "ready",
       "publish_date": "2026-09-25"
     },
@@ -278,48 +189,13 @@
         "caption": "perceived speed of time · n = 1,865",
         "x_label": "age 20 → 80",
         "series": [
-          {
-            "name": "last 10 years",
-            "values": [
-              44,
-              55,
-              66,
-              78,
-              86,
-              88,
-              88
-            ],
-            "color": "punch"
-          },
-          {
-            "name": "week / month / year",
-            "values": [
-              72,
-              71,
-              73,
-              72,
-              71,
-              72,
-              73
-            ],
-            "color": "mute"
-          }
+          {"name": "last 10 years", "values": [44, 55, 66, 78, 86, 88, 88], "color": "punch"},
+          {"name": "week / month / year", "values": [72, 71, 73, 72, 71, 72, 73], "color": "mute"}
         ],
         "note": "only the decade moves"
       },
-      "stimulus_queries": [
-        "vintage alarm clocks market",
-        "antique cuckoo clocks wall",
-        "crowd silhouette street sunset",
-        "watchmaker repairing clocks",
-        "traffic light trails night"
-      ],
-      "scores": {
-        "demand": 5,
-        "evidence": 4,
-        "counterintuition": 5,
-        "chartability": 4
-      },
+      "stimulus_queries": ["vintage alarm clocks market", "antique cuckoo clocks wall", "crowd silhouette street sunset", "watchmaker repairing clocks", "traffic light trails night"],
+      "scores": {"demand": 5, "evidence": 4, "counterintuition": 5, "chartability": 4},
       "replication_check": "2010 + 2013 large-n survey studies, cross-cultural replication (NL, NZ, JP) — passes",
       "status": "published",
       "publish_date": "2026-09-21",
@@ -330,7 +206,7 @@
       "slug": "happiness-plateau-75k",
       "question_en": "Why does happiness stop at $75k?",
       "status": "draft",
-      "note": "Video why_live0919 producido pero NO publicado. Fuente verificada; falta chart_spec con valores reales extraídos de la figura del paper antes de pasar a ready. No reutilizar las cifras del video anterior: no tienen procedencia registrada.",
+      "note": "Video why_live0919 producido pero NO publicado. Fuente verificada; falta chart_spec con valores reales extraídos de la figura del paper antes de pasar a ready. No reutilizar las cifras del video anterior: no tienen procedencia registrada. Corrida 2026-09-26: no se intentó promover — el hallazgo central sigue en disputa activa post-2015 (ver replication_check), y verificar bien las dos ideas más limpias de la cola rindió más que forzar esta.",
       "sources": [
         {
           "cite": "Killingsworth, M. A., Kahneman, D., & Mellers, B. (2023). Income and emotional well-being: A conflict resolved. PNAS, 120(10), e2208661120.",
@@ -345,10 +221,46 @@
       "id": "why-0021",
       "slug": "above-average-driver",
       "question_en": "Why does everyone think they drive better than average?",
-      "lead_source": "Svenson, Acta Psychologica, 1981; later replications",
-      "topic": "self-assessment",
-      "status": "draft",
-      "note": "Fuente ancla identificada, NO verificada. La rutina debe pasar el GATE de la sección 3 (fuente, replicación, graficabilidad, contraintuición, temperatura política) y completar myth/verdict/chart_spec/stimulus_queries antes de promover a 'ready'."
+      "hook": "Ask a room full of drivers. Almost all of them rate themselves above average.",
+      "myth": "I'm a safer, more skillful driver than most people on the road.",
+      "myth_attribution": "Near-universal self-belief, first measured in 1981.",
+      "data_statement": "91% call themselves more skilled. 93% call themselves safer.",
+      "mechanism": "People grade themselves on their best moments at the wheel and everyone else on a vague, generic 'other driver.' Comparing yourself to a blur instead of real data is what lets almost everyone come out ahead.",
+      "verdict": "You can't all be above average.",
+      "verdict_support": "The average is just where half the drivers you're judging actually are.",
+      "takeaway": "Which driver were you rating yourself against?",
+      "sources": [
+        {
+          "cite": "Svenson, O. (1981). Are we all less risky and more skillful than our fellow drivers? Acta Psychologica, 47(2), 143-148.",
+          "doi": "10.1016/0001-6918(81)90005-6",
+          "n": 161,
+          "unit": "drivers, original study",
+          "year": 1981
+        },
+        {
+          "cite": "Koppel, L., Andersson, D., Tinghög, G., Västfjäll, D., & Feldman, G. (2023). We are all less risky and more skillful than our fellow drivers: Successful replication and extension of Svenson (1981). Meta-Psychology.",
+          "doi": "10.15626/MP.2021.2932",
+          "n": 1203,
+          "unit": "participants, preregistered replication",
+          "year": 2023
+        }
+      ],
+      "on_screen_source": "Meta-Psychology, 2023",
+      "chart_spec": {
+        "type": "bar",
+        "caption": "Rated themselves above average",
+        "labels": ["skill", "safety"],
+        "values": [91, 93],
+        "unit": "%",
+        "highlight_index": 1,
+        "note": "1,203 people, preregistered replication of Svenson 1981"
+      },
+      "stimulus_queries": ["hands on steering wheel driving", "car dashboard night driving", "traffic highway aerial view", "rearview mirror driving", "empty road sunset drive"],
+      "scores": {"demand": 4, "evidence": 5, "counterintuition": 4, "chartability": 5},
+      "replication_check": "Pasa. Koppel et al. 2023 (Meta-Psychology) es una réplica preregistrada de gran n (1,203) que confirma el hallazgo original de Svenson 1981 — el efecto sobrevive la crisis de replicación.",
+      "gate": {"source": "pass", "replication": "pass", "chartable": "pass", "counterintuitive": "pass", "political": "pass"},
+      "status": "ready",
+      "publish_date": "2026-09-26"
     },
     {
       "id": "why-0016",
@@ -356,8 +268,9 @@
       "question_en": "Why do intelligent people believe conspiracy theories?",
       "lead_source": "Douglas et al., Annual Review of Psychology, 2019",
       "topic": "conspiracy",
-      "status": "draft",
-      "note": "Fuente ancla identificada, NO verificada. La rutina debe pasar el GATE de la sección 3 (fuente, replicación, graficabilidad, contraintuición, temperatura política) y completar myth/verdict/chart_spec/stimulus_queries antes de promover a 'ready'."
+      "status": "rejected",
+      "reject_reason": "Corte de fuente: la cita de la cola (Annual Review of Psychology, 2019) es incorrecta — el paper real es Douglas, Uscinski, Sutton, Cichocka, Nefes, Ang & Deravi (2019), 'Understanding Conspiracy Theories', Political Psychology 40(S1), 3-35 (verificado 2026-09-26). Es una revisión narrativa de múltiples factores psicológicos/políticos/sociales, sin un hallazgo único cuantificable con n≥500 que se pueda graficar en una barra o línea legible en 4s. Falla fuente y graficabilidad.",
+      "note": "Fuente ancla identificada, verificada y descartada en la corrida del 2026-09-26."
     },
     {
       "id": "why-0005",
@@ -365,8 +278,9 @@
       "question_en": "Why do you still remember that embarrassing moment?",
       "lead_source": "Berntsen — involuntary autobiographical memory",
       "topic": "memory",
-      "status": "draft",
-      "note": "Fuente ancla identificada, NO verificada. La rutina debe pasar el GATE de la sección 3 (fuente, replicación, graficabilidad, contraintuición, temperatura política) y completar myth/verdict/chart_spec/stimulus_queries antes de promover a 'ready'."
+      "status": "rejected",
+      "reject_reason": "Corte de fuente: el estudio de diario de Rasmussen & Berntsen sobre memorias autobiográficas involuntarias tiene n=14 participantes (verificado 2026-09-26) — muy por debajo del umbral n≥500 / meta-análisis exigido. No se encontró un meta-análisis o estudio de gran escala equivalente centrado específicamente en memorias vergonzosas involuntarias.",
+      "note": "Fuente ancla identificada, verificada y descartada en la corrida del 2026-09-26."
     },
     {
       "id": "why-0004",
